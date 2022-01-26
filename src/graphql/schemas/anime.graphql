@@ -1,0 +1,89 @@
+type Query {
+    "Get anime from url"
+    getAnime(id:Int): Anime
+    getPictures(url:String): [Picture]
+}
+
+type Anime {
+    "Mal id of the anime"
+    id: ID!
+    "Title of the anime"
+    title: String!
+    "Synopsis of the anime"
+    synopsis: String
+    "Url of front page anime"
+    url_img: String
+    "Score of the anime"
+    score: Float
+    "Episodes of the anime"
+    episodes: Int
+    "Synonyms of the Title"
+    synonyms: String
+    "Type of the anime"
+    type: String
+    "Status of emission of the anime"
+    status: Boolean
+    "Date of emission episodes"
+    broadcast:String
+    "Source of the anime"
+    source:String
+    "Genres of the animes"
+    genres: [Genre]
+    "Duration of one episode of the anime"
+    duration: String
+    "Rating of the anime"
+    rating: String
+    "Url of the PV of the anime"
+    url_video: String
+    "External links about of the anime"
+    studio: Producer
+    url_characters: String
+    external_links: [ExternalLink]
+    related_anime: [RelatedAnime]
+    recommendations: [Recommendation]
+    aired: Aired
+}
+
+type Aired {
+    from: Date
+    to: Date
+}
+
+type Date{
+    day: Int
+    month: Int
+    year: Int
+}
+
+type Picture {
+    url_short:String
+    url_large:String
+}
+
+type ExternalLink{
+    "Name of the external link"
+    name: String
+    "Url of the external link"
+    url: String
+}
+
+type Recommendation {
+    id:ID
+    title:String
+    url_page:String
+    url_img:String
+}
+
+type RelatedAnime {
+    id: ID
+    type: String
+    title:String
+    url_page: String
+}
+
+type TinyAnime {
+    id:ID
+    title: String
+    url_img: String
+    url_page:String
+}

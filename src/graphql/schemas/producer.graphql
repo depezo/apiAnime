@@ -1,0 +1,8 @@
+type Query {
+    getProducerAnimes(id:Int,page:Int): [AnimeSeason]
+}
+
+type Producer {
+    id:ID
+    description:String
+}

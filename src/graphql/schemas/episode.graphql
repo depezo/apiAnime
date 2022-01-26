@@ -1,0 +1,10 @@
+type Query {
+    getSubEpisodes(name:String,episode:Int): [Episode]
+    getLatEpisodes(name:String,episode:Int): [Episode]
+}
+
+type Episode {
+    type:String
+    url:String
+    language:String
+}
