@@ -14,7 +14,7 @@ interface SearchAnime {
 
 export function getSearchAnimes(request: string, page: number) {
     const limit = page * 50 - 50;
-    const uri = 'https://myanimelist.net/anime.php?cat=anime&q=' + request + '&show=' + limit;
+    const uri = 'https://myanimelist.net/anime.php?cat=anime&q=' + request + '&show=' + limit + '&genre_ex%5B%5D=12';
     return getSearchDataAnime(uri);
 }
 
@@ -41,6 +41,7 @@ export async function getSearchDataAnime(url:string){
                 var episodes = 0;
                 var score = 0.0;
                 const data = $(value).find('td');
+                var stateH = false;
                 data.map(function (i: any, value: any) {
                     switch (i) {
                         case 0:
@@ -51,6 +52,8 @@ export async function getSearchDataAnime(url:string){
                         case 1:
                             title = $(value).find('.hoverinfo_trigger > strong').text();
                             synopsis = String($(value).find('.pt4').text()).replace('read more.','');
+                            const dataHover = String($(value).find('.hoverinfo-contaniner').text());
+                            console.log(dataHover);
                             break;
                         case 2:
                             type = String($(value).text()).trimStart().trimEnd();

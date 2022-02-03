@@ -197,7 +197,7 @@ export async function getAnimeData(idA: number) {
                 broadcast = String($(value).text()).replace('Broadcast:', '').trimStart().trimEnd();
             } else if (String($(value).text()).includes('Source')) {
                 source = String($(value).text()).replace('Source:', '').trimStart().trimEnd();
-            } else if (String($(value).text()).includes('Genres') || String($(value).text()).includes('Theme') || String($(value).text()).includes('Demographic')) {
+            } else if (String($(value).text()).includes('Genre') || String($(value).text()).includes('Theme') || String($(value).text()).includes('Demographic')) {
                 const secondData = $(value).find("a");
                 secondData.map(function (i: any, te: any) {
                     const id = Number(String($(te).attr("href")).split("/")[3]);

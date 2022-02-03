@@ -72,20 +72,29 @@ export async function getScheduleAnimes(){
                 }
                 const type = String($(value).find('.information > .info').text()).split('-')[0].trim();
                 const release = String($(value).find('div > .prodsrc > .info > .item').text()).split('\n')[0].trimStart().trimEnd();
-                animesSeason.push({
-                    id,
-                    title,
-                    synopsis,
-                    producer,
-                    source,
-                    episodes,
-                    url_page,
-                    url_img,
-                    score,
-                    type,
-                    release,
-                    genres
-                });
+                var stateH = false;
+                for (var item of genres){
+                    if(item.id == 12){
+                        stateH = true;
+                        break;
+                    }
+                }
+                if(!stateH){
+                    animesSeason.push({
+                        id,
+                        title,
+                        synopsis,
+                        producer,
+                        source,
+                        episodes,
+                        url_page,
+                        url_img,
+                        score,
+                        type,
+                        release,
+                        genres
+                    });
+                }                
             });
             scheduleAnimes.push({
                 day,

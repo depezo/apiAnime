@@ -25,16 +25,16 @@ export async function getLatEpisodes(name: string, episode: number) {
                         source = 'ahd';
                         secondNameAHD = i.split('#')[1];
                     }                    
-                }else if(i.includes(',')){
-                    if(i.split(',')[0]===name){
+                }else if(i.includes(',,')){
+                    if(i.split(',,')[0]===name){
                         if(i.includes(';')){
                             typeHej = 'm';
                             source = 'hej';
-                            nameHej = i.split(',;')[1];
+                            nameHej = i.split(',,;')[1];
                         }else{
                             typeHej = 'e';
                             source = 'hej';
-                            nameHej = i.split(',')[1];
+                            nameHej = i.split(',,')[1];
                         }
                     }    
                 }
