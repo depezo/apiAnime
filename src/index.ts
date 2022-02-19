@@ -4,7 +4,7 @@ import { schema } from './graphql';
 
 const functions = require('firebase-functions');
 const { ApolloServer, gpl } = require('apollo-server-express');
-
+// 
 async function startApolloServer() {
     const app = express();
     app.use(cors());

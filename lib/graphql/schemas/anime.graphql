@@ -1,6 +1,6 @@
 type Query {
     "Get anime from url"
-    getAnime(id:Int): Anime
+    getAnime(id:Int,hentai_status: Boolean): Anime
     getPictures(url:String): [Picture]
 }
 

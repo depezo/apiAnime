@@ -92,7 +92,7 @@ export async function getPictures(url: string) {
     }
 }
 
-export async function getAnimeData(idA: number) {
+export async function getAnimeData(idA: number,hentai_status: boolean) {
     try {
         const uri = 'https://myanimelist.net/anime/' + idA;
         const { data } = await axios.get(uri);
@@ -135,7 +135,6 @@ export async function getAnimeData(idA: number) {
                 url_characters = 'https://myanimelist.net/' + $(value).find('a').attr('href');
             }
         });
-        console.log(url_characters);
         dataR.map(function (i: any, value: any) {
             if (String($(value).find('a').attr('href')).includes('recommendations')) {
                 idR = Number(String($(value).find('a').attr('href')).split('/anime/')[1].replace(idA.toString(), '').replace('-', ''));
@@ -178,7 +177,6 @@ export async function getAnimeData(idA: number) {
                 if (String($(value).text()).split('\n')[2].trim() != "Unknown") {
                     episodes = Number(String($(value).text()).split('\n')[2].trim());
                 }
-                console.log(episodes);
             } else if (String($(value).text()).includes('Synonyms')) {
                 synonyms = String($(value).text()).replace('Synonyms:', '').trimStart().trimEnd();
             } else if (String($(value).text()).includes('Studios')) {
@@ -228,7 +226,10 @@ export async function getAnimeData(idA: number) {
                         if (!fromData.includes('?')) {
                             const dataD = fromData.split(' ');
                             const month = getNumberMonth(dataD[0]);
-                            const day = Number(dataD[1]);
+                            var day = 0;
+                            if(Number(dataD[1])<=31){
+                                day = Number(dataD[1]);
+                            }
                             const year = Number(dataD[2]);
                             from.day = day;
                             from.month = month;
@@ -249,8 +250,12 @@ export async function getAnimeData(idA: number) {
                 }
             }
         });
-        if(episodes == 0){
-            episodes = await getCountEpisodes(title)
+        if (episodes == 0) {
+            if(hentai_status){
+                episodes = await getCountHEpisodes(title);
+            }else{
+                episodes = await getCountEpisodes(title);
+            }            
         }
         const aired: Aired = { from, to };
         const anime: Anime = { id, title, url_img, synopsis, score, episodes, synonyms, type, status, broadcast, source, genres, duration, rating, url_video, studio, external_links, related_anime, recommendations, aired, url_characters };
@@ -260,9 +265,37 @@ export async function getAnimeData(idA: number) {
     }
 }
 
+async function getCountHEpisodes(title: string){
+    var episodes = 0;
+    try {
+        var name = title.replace('.','').replace(', ','-').replace(': ','-').replace(/\s/g,'-').replace('!','').toLowerCase();
+        const names = await getDataOnDB('hentai');
+        names.map(function (i: any, value: any) {
+            if (i.includes(title)) {
+                if (i.split(',,')[0] === title) {
+                    if (i.includes(',,')) {
+                        name = i.split(',,')[1];
+                    }
+                }
+            }
+        });
+        const url = 'https://hentaila.com/hentai-' + name;
+        const { data } = await axios.get(url);
+        const $ = cheerio.load(data);
+        const count = $('.episodes-list > article');
+        count.map(function(i:any,value:any){
+            episodes++;
+        });
+        return episodes;
+    } catch (error) {
+        console.log(error);
+        return episodes;
+    }
+}
+
 async function getCountEpisodes(name: string) {
     try {
-        var episodes = 0
+        var episodes = 0;
         var nameJK = name.replace('.', '').replace(', ', '-').replace(': ', '-').replace(/\s/g, '-').toLowerCase();
         const names = await getDataOnDB('sub_es');
         names.map(function (i: any, value: any) {
@@ -278,7 +311,7 @@ async function getCountEpisodes(name: string) {
         const { data } = await axios.get(url);
         const $ = cheerio.load(data);
         const dataNumbers = $('.anime__pagination > .numbers');
-        dataNumbers.map(function(i:any , value:any ){
+        dataNumbers.map(function (i: any, value: any) {
             episodes = Number(String($(value).text()).split(' - ')[1])
         });
         return episodes;

@@ -1,6 +1,7 @@
 type Query {
     getSubEpisodes(name:String,episode:Int): [Episode]
     getLatEpisodes(name:String,episode:Int): [Episode]
+    getHEpisodes(name:String,episode:Int): [Episode]
 }
 
 type Episode {

@@ -14,7 +14,7 @@ interface SearchAnime {
 
 export function getSearchAnimes(request: string, page: number) {
     const limit = page * 50 - 50;
-    const uri = 'https://myanimelist.net/anime.php?cat=anime&q=' + request + '&show=' + limit + '&genre_ex%5B%5D=12';
+    const uri = 'https://myanimelist.net/anime.php?cat=anime&q=' + request + '&show=' + limit + '&c%5B%5D=a&c%5B%5D=b&c%5B%5D=c&c%5B%5D=g';
     return getSearchDataAnime(uri);
 }
 
@@ -42,6 +42,7 @@ export async function getSearchDataAnime(url:string){
                 var score = 0.0;
                 const data = $(value).find('td');
                 var stateH = false;
+                var stateH = false;
                 data.map(function (i: any, value: any) {
                     switch (i) {
                         case 0:
@@ -53,7 +54,6 @@ export async function getSearchDataAnime(url:string){
                             title = $(value).find('.hoverinfo_trigger > strong').text();
                             synopsis = String($(value).find('.pt4').text()).replace('read more.','');
                             const dataHover = String($(value).find('.hoverinfo-contaniner').text());
-                            console.log(dataHover);
                             break;
                         case 2:
                             type = String($(value).text()).trimStart().trimEnd();
@@ -68,20 +68,27 @@ export async function getSearchDataAnime(url:string){
                                 score = Number($(value).text());
                             }
                             break;
+                        case 5:
+                            if(String($(value).text().toLowerCase()).includes('rx')){
+                                stateH = true;
+                            }
+                            break;
                         default:
                             break;
                     }
                 });
-                search_animes.push({
-                    id,
-                    title,
-                    synopsis,
-                    url_page,
-                    url_img,
-                    type,
-                    episodes,
-                    score
-                });
+                if(!stateH){
+                    search_animes.push({
+                        id,
+                        title,
+                        synopsis,
+                        url_page,
+                        url_img,
+                        type,
+                        episodes,
+                        score
+                    });
+                }
             }
         });
         return search_animes;
