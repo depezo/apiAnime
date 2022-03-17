@@ -12,6 +12,7 @@ import searchResolver from "./resolvers/search_resolver";
 import genresResolver from "./resolvers/genres_resolver";
 import episodeResolver from "./resolvers/episode_resolver";
 import scheduleResolver from "./resolvers/schedule_resolver";
+import newsResolver from "./resolvers/news_resolver";
 
 //Schemas
 import anime from "./schemas/anime.graphql";
@@ -25,6 +26,7 @@ import search from "./schemas/search.graphql";
 import episode from "./schemas/episode.graphql";
 import producerResolver from "./resolvers/producerResolver";
 import schedule from "./schemas/schedule.graphql";
+import news from "./schemas/news.graphql";
 
 export const schema: GraphQLSchema = mergeSchemas({
     typeDefs: [
@@ -37,7 +39,8 @@ export const schema: GraphQLSchema = mergeSchemas({
         top,
         search,
         episode,
-        schedule
+        schedule,
+        news
     ],
     resolvers: [
         animeResolver,
@@ -49,6 +52,7 @@ export const schema: GraphQLSchema = mergeSchemas({
         genresResolver,
         producerResolver,
         episodeResolver,
-        scheduleResolver
+        scheduleResolver,
+        newsResolver
     ]
 });

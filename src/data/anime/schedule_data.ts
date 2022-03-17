@@ -1,5 +1,5 @@
 import { Genre } from "./genres_data";
-import { Producer } from "./producer_data";
+import { Producer, ShortProducer } from "./producer_data";
 import { AnimeSeason, getDataAnimeSeason } from "./season_data";
 
 const cheerio = require('cheerio');
@@ -45,7 +45,7 @@ export async function getScheduleAnimes(){
                         source = $(val).find('.item').text();
                     }    
                 });
-                const producer: Producer = { id: idP, description: descriptionP };
+                const producer: ShortProducer = { id: idP, name: descriptionP };
                 var episodes = 0;
                 if (String($(value).find('.eps > a').text()).replace('eps', '').replace('ep', '').trim() != '?') {
                     episodes = Number(String($(value).find('.eps > a').text()).replace('eps', '').replace('ep', ''));

@@ -1,6 +1,7 @@
 import { getDataOnDB } from "../players/lat_players_data";
 import { Genre } from "./genres_data";
-import { Producer } from "./producer_data";
+import { Producer, ShortProducer } from "./producer_data";
+const translate = require('translate');
 const cheerio = require('cheerio');
 const axios = require('axios').default;
 
@@ -22,7 +23,7 @@ interface Anime {
     rating: string
     url_video: string
     url_characters: string
-    studio: Producer
+    studio: ShortProducer
     external_links: ExternalLink[]
     related_anime: RelatedAnime[]
     recommendations: Recommendation[]
@@ -100,7 +101,7 @@ export async function getAnimeData(idA: number,hentai_status: boolean) {
         const id = idA;
         const url_img = $(".borderClass > div > div > a > img").attr("data-src");
         const title = $(".h1-title > div > h1 > strong").text();
-        const synopsis = String($("#content > table > tbody > tr > td > .js-scrollfix-bottom-rel > table > tbody > tr > td > p").text()).replace('[Written by MAL Rewrite]', '');
+        const synopsisNT = String($("#content > table > tbody > tr > td > .js-scrollfix-bottom-rel > table > tbody > tr > td > p").text()).replace('[Written by MAL Rewrite]', '');
         var score = 0.0;
         if (String($(".score-label").html()).trim() != 'N/A') {
             score = Number(String($(".score-label").html()).trim());
@@ -171,7 +172,7 @@ export async function getAnimeData(idA: number,hentai_status: boolean) {
         });
         var from: Date = { day: 0, month: 0, year: 0 };
         var to: Date = { day: 0, month: 0, year: 0 };
-        var studio: Producer = { id: 0, description: "" }
+        var studio: ShortProducer = { id: 0, name: "" }
         dataE.map(function (i: any, value: any) {
             if (String($(value).text()).includes('Episodes')) {
                 if (String($(value).text()).split('\n')[2].trim() != "Unknown") {
@@ -182,7 +183,7 @@ export async function getAnimeData(idA: number,hentai_status: boolean) {
             } else if (String($(value).text()).includes('Studios')) {
                 if (!String($(value).text()).includes('None found')) {
                     studio.id = Number(String($(value).find('a').attr('href')).split('/producer/')[1].split('/')[0]);
-                    studio.description = String($(value).find('a').attr('title'));
+                    studio.name = String($(value).find('a').attr('title'));
                 }
             }
             else if (String($(value).text()).includes('Type')) {
@@ -258,6 +259,7 @@ export async function getAnimeData(idA: number,hentai_status: boolean) {
             }            
         }
         const aired: Aired = { from, to };
+        var synopsis = await translate(synopsisNT, "es");
         const anime: Anime = { id, title, url_img, synopsis, score, episodes, synonyms, type, status, broadcast, source, genres, duration, rating, url_video, studio, external_links, related_anime, recommendations, aired, url_characters };
         return anime;
     } catch (error) {

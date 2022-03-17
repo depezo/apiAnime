@@ -12,19 +12,19 @@ interface SearchAnime {
     score: number
 }
 
-export function getSearchAnimes(request: string, page: number) {
+export function getSearchAnimes(request: string, page: number,hentai_status:boolean) {
     const limit = page * 50 - 50;
     const uri = 'https://myanimelist.net/anime.php?cat=anime&q=' + request + '&show=' + limit + '&c%5B%5D=a&c%5B%5D=b&c%5B%5D=c&c%5B%5D=g';
-    return getSearchDataAnime(uri);
+    return getSearchDataAnime(uri,hentai_status);
 }
 
 export function getLetterAnimes(letter:string,page:number){
     const limit = page * 50 - 50;
     const uri = 'https://myanimelist.net/anime.php?letter=' + letter + '&show=' + limit;
-    return getSearchDataAnime(uri);
+    return getSearchDataAnime(uri,false);
 }
 
-export async function getSearchDataAnime(url:string){
+export async function getSearchDataAnime(url:string,hentai_status:boolean){
     try {
         const { data } = await axios.get(url);
         const $ = cheerio.load(data);
@@ -77,7 +77,7 @@ export async function getSearchDataAnime(url:string){
                             break;
                     }
                 });
-                if(!stateH){
+                if(!stateH || hentai_status){
                     search_animes.push({
                         id,
                         title,

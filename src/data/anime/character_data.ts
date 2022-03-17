@@ -1,4 +1,5 @@
 import { Actor } from "./actor_data";
+const translate = require('translate');
 const cheerio = require('cheerio');
 const axios = require('axios').default;
 
@@ -37,7 +38,7 @@ export async function getCharacter(idC: number) {
         var birthday = "";
         var blood_type = "";
         var height = "";
-        var description = "";
+        var descriptionNT = "";
         var actor: Actor;
         var id_actor = 0;
         var name_actor = "";
@@ -70,7 +71,7 @@ export async function getCharacter(idC: number) {
                         }
                     }
                 }
-                description = String($(value).clone().children().remove().end().text()).trimStart().trimEnd();
+                descriptionNT = String($(value).clone().children().remove().end().text()).trimStart().trimEnd();
                 /*for (var val of dataD) {
                     if (val.trimStart().trimEnd() != '') {
                         description = description + '\n' + val;
@@ -90,6 +91,7 @@ export async function getCharacter(idC: number) {
             }
         });
         actor = { id: id_actor, name: name_actor, url_img: url_imgActor, url_page: url_pageActor };
+        const description = await translate(descriptionNT, "es")
         const character_full: CharacterFull = { id, name, url_page, url_img, age, birthday, blood_type, height, description, actor };
         return character_full;
     } catch (error) {

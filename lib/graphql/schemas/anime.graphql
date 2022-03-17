@@ -36,7 +36,7 @@ type Anime {
     "Url of the PV of the anime"
     url_video: String
     "External links about of the anime"
-    studio: Producer
+    studio: ShortProducer
     url_characters: String
     external_links: [ExternalLink]
     related_anime: [RelatedAnime]
@@ -79,6 +79,11 @@ type RelatedAnime {
     type: String
     title:String
     url_page: String
+}
+
+type ShortProducer {
+    id: ID
+    name: String
 }
 
 type TinyAnime {

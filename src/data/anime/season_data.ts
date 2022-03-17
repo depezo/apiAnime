@@ -1,6 +1,6 @@
 import { analytics } from "firebase-functions/v1";
 import { Genre } from "./genres_data";
-import { Producer } from "./producer_data";
+import { Producer, ShortProducer } from "./producer_data";
 const cheerio = require('cheerio');
 const axios = require('axios').default;
 
@@ -8,7 +8,7 @@ export interface AnimeSeason {
     id: number
     title: String
     synopsis: String
-    producer: Producer
+    producer: ShortProducer
     source: string
     episodes: number
     url_page: String
@@ -59,7 +59,7 @@ export async function getDataAnimeSeason(url: string) {
                         source = $(val).find('.item').text();
                     }    
                 });
-                const producer: Producer = { id: idP, description: descriptionP };
+                const producer: ShortProducer = { id: idP, name: descriptionP };
                 var episodes = 0;
                 if (String($(value).find('.eps > a').text()).replace('eps', '').replace('ep', '').trim() != '?') {
                     episodes = Number(String($(value).find('.eps > a').text()).replace('eps', '').replace('ep', ''));

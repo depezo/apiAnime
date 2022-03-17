@@ -1,5 +1,5 @@
 type Query {
-    getSearchAnimes(request:String, page:Int): [SearchAnime]
+    getSearchAnimes(request:String, page:Int,hentai_status:Boolean): [SearchAnime]
     getLetterAnimes(letter:String, page:Int): [SearchAnime]
 }
 
