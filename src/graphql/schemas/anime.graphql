@@ -83,7 +83,7 @@ type RelatedAnime {
 
 type ShortProducer {
     id: ID
-    name: String
+    description: String
 }
 
 type TinyAnime {

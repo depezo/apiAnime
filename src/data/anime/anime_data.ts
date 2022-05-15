@@ -172,7 +172,7 @@ export async function getAnimeData(idA: number,hentai_status: boolean) {
         });
         var from: Date = { day: 0, month: 0, year: 0 };
         var to: Date = { day: 0, month: 0, year: 0 };
-        var studio: ShortProducer = { id: 0, name: "" }
+        var studio: ShortProducer = { id: 0, description: "" }
         dataE.map(function (i: any, value: any) {
             if (String($(value).text()).includes('Episodes')) {
                 if (String($(value).text()).split('\n')[2].trim() != "Unknown") {
@@ -183,7 +183,7 @@ export async function getAnimeData(idA: number,hentai_status: boolean) {
             } else if (String($(value).text()).includes('Studios')) {
                 if (!String($(value).text()).includes('None found')) {
                     studio.id = Number(String($(value).find('a').attr('href')).split('/producer/')[1].split('/')[0]);
-                    studio.name = String($(value).find('a').attr('title'));
+                    studio.description = String($(value).find('a').attr('title'));
                 }
             }
             else if (String($(value).text()).includes('Type')) {

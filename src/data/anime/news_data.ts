@@ -39,14 +39,23 @@ export async function getNews(id: number) {
         const $ = cheerio.load(data);
         const container = $('.news-container');
         const titleNT = $(container).find('.title > a').text();
-        const url_img = $(container).find('.content > img').attr('src');
+        var url_img = $(container).find('.content > img').attr('src');
+        if( url_img == null){
+            url_img = ""
+        }
         const textNT = String($(container).find('.content').text()).trimEnd().trimStart();
         var url_video = "";
         if (String($(container).find('.content > iframe').attr('src')) != null) {
             url_video = String($(container).find('.content > iframe').attr('src'));
         }
         const title = await translate(titleNT, 'es');
-        const text = await translate(textNT, 'es');
+        var text = "";
+        if(textNT.length > 5000){
+            const  temp_text = textNT.substring(0,4996) + "..."
+            text = await translate(temp_text, 'es');
+        }else{
+            text = await translate(textNT, 'es');
+        }
         const tags: String[] = [];
         const data_tags = $(container).find('.tags > a');
         data_tags.map(function (i: any, value: any) {
@@ -64,7 +73,7 @@ export async function getNews(id: number) {
             const id = Number(String($(value).find('a').attr('href')).split('news/')[1]);
             const titleNT = String($(value).find('div > .title').text()).trimEnd().trimStart();
             const title = translate(titleNT, 'es');
-            const url_img = $(value).find('a > img').attr('src');
+            const url_img = String($(value).find('a > img').attr('src')).replace('r/50x50/','');
             related_news.push({ id, url_img, title });
         });
         const related_anime: RelatedAnimeNews = { id: idRA, title: titleRA };
@@ -108,10 +117,11 @@ export async function getNewsByProducer(url: String){
     }
 }
 
-export async function getNewsByTag(tag: String){
+export async function getNewsByTag(tag: String, page: number){
     try {
+        const p = page > 1 ?'?p='+(page): '';
         const t = tag.toLowerCase().replace(' ','_');
-        const url = 'https://myanimelist.net/news/tag/' + t;
+        const url = 'https://myanimelist.net/news/tag/' + t + p;
         const { data } = await axios.get(url);
         const $ = cheerio.load(data);
         const dataAN = $('.content-left > .news-list > .clearfix');

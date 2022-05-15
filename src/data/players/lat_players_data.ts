@@ -65,7 +65,7 @@ function generateUrlAHD(name: string, episode: number) {
 function generateUrlHEJ(name: string, episode: number,type:string) {
     var url = '';
     if(type=='e'){
-        url = 'https://henaojara.com/episode/' + name + '-espanol-latino-hd-1x' + episode;
+        url = 'https://henaojara.com/ver/episode/' + name + '-espanol-latino-hd-1x' + episode;
     }else{
         url = 'https://henaojara.com/' + name;
     }

@@ -3,6 +3,7 @@ import { Genre } from "./genres_data";
 import { Producer, ShortProducer } from "./producer_data";
 const cheerio = require('cheerio');
 const axios = require('axios').default;
+const translate = require('translate');
 
 export interface AnimeSeason {
     id: number
@@ -59,13 +60,14 @@ export async function getDataAnimeSeason(url: string) {
                         source = $(val).find('.item').text();
                     }    
                 });
-                const producer: ShortProducer = { id: idP, name: descriptionP };
+                const producer: ShortProducer = { id: idP, description: descriptionP };
                 var episodes = 0;
                 if (String($(value).find('.eps > a').text()).replace('eps', '').replace('ep', '').trim() != '?') {
                     episodes = Number(String($(value).find('.eps > a').text()).replace('eps', '').replace('ep', ''));
                 }
                 
-                const synopsis = $(value).find('.synopsis > .preline').text();
+                const synopsisNT = $(value).find('.synopsis > .preline').text();
+                const synopsis = translate(synopsisNT, 'es');
                 const dataG = $(value).find('.genres > .genres-inner > .genre');
                 var genres: Genre[] = [];
                 dataG.map(function (i: any, value: any) {

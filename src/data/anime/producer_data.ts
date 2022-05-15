@@ -29,7 +29,7 @@ interface ShortAnime {
 
 export interface ShortProducer {
     id: number
-    name: String
+    description: String
 }
 
 export async function getProducerAnimes(id: number) {
@@ -105,16 +105,20 @@ export async function getProducerAnimes(id: number) {
             url: object
         })
     });
-    const textN = await translate(textNT,'es');
-    const titleN = await translate(titleNT,'es');
-    const recent_news: ShortNews = {
-        id: idN,
-        title: titleN,
-        text: textN,
-        url_img: url_imgN,
-        tags: tagsN
-    };
-    const description = await translate(descriptionNT,'es');
+    const textN = textNT ? await translate(textNT,'es')  : "";
+    const titleN = titleNT ? await translate(titleNT,'es'): "";
+    var recent_news: ShortNews = {id: 0, tags: [],text: "",title: "",url_img: ""};
+    console.log("" + idN)
+    if(idN != null && idN != undefined && !Number.isNaN(idN)){
+        recent_news = {
+            id: idN,
+            title: titleN,
+            text: textN,
+            url_img: url_imgN,
+            tags: tagsN
+        };
+    }
+    const description = descriptionNT ? await translate(descriptionNT,'es') : "";
     const producer: Producer = {
         id,
         name,

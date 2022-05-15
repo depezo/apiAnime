@@ -1,5 +1,6 @@
 const cheerio = require('cheerio');
 const axios = require('axios').default;
+const translate = require('translate');
 
 interface SearchAnime {
     id: number
@@ -52,7 +53,8 @@ export async function getSearchDataAnime(url:string,hentai_status:boolean){
                             break;
                         case 1:
                             title = $(value).find('.hoverinfo_trigger > strong').text();
-                            synopsis = String($(value).find('.pt4').text()).replace('read more.','');
+                            const synopsisNT = String($(value).find('.pt4').text()).replace('read more.','');
+                            synopsis = translate(synopsisNT, 'es');
                             const dataHover = String($(value).find('.hoverinfo-contaniner').text());
                             break;
                         case 2:

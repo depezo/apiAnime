@@ -45,7 +45,7 @@ export async function getScheduleAnimes(){
                         source = $(val).find('.item').text();
                     }    
                 });
-                const producer: ShortProducer = { id: idP, name: descriptionP };
+                const producer: ShortProducer = { id: idP, description: descriptionP };
                 var episodes = 0;
                 if (String($(value).find('.eps > a').text()).replace('eps', '').replace('ep', '').trim() != '?') {
                     episodes = Number(String($(value).find('.eps > a').text()).replace('eps', '').replace('ep', ''));

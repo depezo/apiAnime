@@ -9,7 +9,7 @@ const newsResolver = {
             return getAllNews(args.page);
         },
         getNewsByTag(root:void, args: any){
-            return getNewsByTag(args.tag);
+            return getNewsByTag(args.tag, args.page);
         },
         getNewsByProducer(root:void, args: any){
             return getNewsByProducer(args.url);

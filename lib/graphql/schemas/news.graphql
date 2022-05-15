@@ -1,7 +1,7 @@
 type Query {
     getNews(id: Int): News
     getAllNews(page: Int): [ShortNews]
-    getNewsByTag(tag: String): [ShortNews]
+    getNewsByTag(tag: String, page: Int): [ShortNews]
     getNewsByProducer(url: String): [ShortNews]
 }
 
