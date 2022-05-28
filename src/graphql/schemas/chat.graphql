@@ -1,0 +1,14 @@
+type Mutation {
+    sendMessage(message: String, user: UserData): String
+}
+
+input UserData {
+    id: String
+    username: String
+    url_photo: String
+    url_gif: String
+    count_anime: Int
+    count_episodes: Int
+    count_reviews: Int
+    rol: RolInput
+}

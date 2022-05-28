@@ -7,7 +7,8 @@ const { gotScraping } = require('got-scraping');
 
 admin.initializeApp({
     credential: admin.credential.cert(serviceAccount),
-    databaseURL: 'https://animeapp2test-default-rtdb.firebaseio.com/'
+    //databaseURL: 'https://animeapp2test-default-rtdb.firebaseio.com/'
+    databaseURL: 'https://testingproject-6874f-default-rtdb.firebaseio.com'
 });
 
 export async function getLatEpisodes(name: string, episode: number) {
@@ -58,7 +59,7 @@ export async function getLatEpisodes(name: string, episode: number) {
 function generateUrlAHD(name: string, episode: number) {
     const nameAHD = name.replace('.', '').replace(', ', '-').replace(': ', '-').replace(/\s/g, '-').toLowerCase();
     const url = 'https://www.animelatinohd.com/ver/' + nameAHD + '/' + episode;
-    console.log(url);
+    //console.log(url);
     return url;
 }
 
@@ -69,7 +70,7 @@ function generateUrlHEJ(name: string, episode: number,type:string) {
     }else{
         url = 'https://henaojara.com/' + name;
     }
-    console.log(url);
+    //console.log(url);
     return url;
 }
 

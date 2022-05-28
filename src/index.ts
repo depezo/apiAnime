@@ -1,6 +1,7 @@
 import express from 'express';
 import cors from 'cors';
 import { schema } from './graphql';
+import { migrateTest } from './data/migrate/migrate_rt_to_ft';
 
 const functions = require('firebase-functions');
 const { ApolloServer, gpl } = require('apollo-server-express');

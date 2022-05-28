@@ -1,11 +1,18 @@
+import { DataSnapshot } from "firebase-functions/v1/database";
+import { DocumentSnapshot, QueryDocumentSnapshot } from "firebase-functions/v1/firestore";
 import { getDataOnDB } from "../players/lat_players_data";
 import { Genre } from "./genres_data";
 import { Producer, ShortProducer } from "./producer_data";
+import { getUser, User, UserData } from "../user/user_data";
 const translate = require('translate');
 const cheerio = require('cheerio');
 const axios = require('axios').default;
+const admin = require('firebase-admin');
+var firestore = admin.firestore();
+const FieldValue = admin.firestore.FieldValue;
+var realtime = admin.database();
 
-interface Anime {
+export interface Anime {
     id: number
     title: string
     url_img: string
@@ -27,6 +34,7 @@ interface Anime {
     external_links: ExternalLink[]
     related_anime: RelatedAnime[]
     recommendations: Recommendation[]
+    dub_spa_enable: Boolean
 }
 
 interface Aired {
@@ -64,11 +72,197 @@ interface Recommendation {
     url_img: string
 }
 
+interface Comment {
+    id: String
+    id_user: String
+    user: UserData
+    message: String
+    likes: String[]
+    dislikes: String[]
+    datetime: String
+}
+
 export interface TinyAnime {
     id: number
     title: String
     url_img: String
     url_page: String
+}
+
+export interface Review {
+    id: String
+    user: UserData
+    description: String
+    anime: TinyAnime
+    likes: String[]
+    datetime: String
+}
+
+export async function getBestReviewWeek(){
+    let reviews: Review[] = []
+    try {
+        const data = await firestore.collection('reviews').orderBy('timestamp','desc').limit(10).get();
+        data.forEach((doc: any) => {
+            const review: Review = doc.data();
+            review.id = doc.id;
+            review.datetime = doc.get("timestamp")._seconds.toString()
+            reviews.push(review);
+        });
+        await Promise.all(reviews.map(async (value: any,index: any) => {
+            reviews[index].user = await getUser(value.id_user);
+        }));
+        console.log('executing query: ', reviews.length);
+    } catch (error) {
+        console.log(error);
+    }
+    return reviews;
+}
+
+export async function setLikeReview(idUser: String,type: String,idAnime: number,idReview: String){
+    let status = "";
+    try {
+        /* Firestore */
+        console.log(type,idAnime,idReview, " - ", idUser);
+        if(type == "likes"){
+            await firestore.collection('reviews').doc(idReview).update({
+                likes: FieldValue.arrayUnion(idUser)
+            });
+        }else{
+            await firestore.collection('reviews').doc(idReview).update({
+                likes: FieldValue.arrayRemove(idUser)
+            });
+        }
+        /* Realtime database */
+        //await realtime.ref('anime/' + idAnime.toString() + '/comments/' + idComment).child(type).set(likesOrDislikes);
+        status = "OK.";
+    } catch (error) {
+        console.log(error);
+    }
+    return status;
+}
+
+export async function getReviewsByAnime(id: number){
+    let reviews: Review[] = [];
+    try {
+        const snapshot = await firestore.collection('reviews').where('anime.id','==',id.toString()).get();
+        if(snapshot.empty) return reviews;
+        snapshot.forEach((doc: any) => {
+            const review: Review = doc.data();
+            review.id = doc.id;
+            review.datetime = doc.get("timestamp")._seconds.toString()
+            reviews.push(review);
+        });
+        await Promise.all(reviews.map(async (value: any,index: any) => {
+            reviews[index].user = await getUser(value.id_user);
+        }));
+    } catch (error) {
+        console.log(error);
+    }
+    return reviews;
+}
+
+export async function setReview(id: String,title: String, description: String, anime: TinyAnime){
+    let status = "";
+    try {
+        await firestore.collection('reviews').add({
+            id_user: id,
+            title: title,
+            description: description,
+            anime: anime,
+            timestamp: FieldValue.serverTimestamp()
+        });
+        await firestore.collection('users').doc(id).update({
+            count_reviews: FieldValue.increment(1)
+        });
+        status = "OK";
+    } catch (error) {
+        console.log(error);
+    }
+    return status;
+}
+
+export async function getComments(id: number) {
+    const comments: Comment[] = [];
+    try{
+        /* Firestore */
+        const snapshot = await firestore.collection('anime').doc(id.toString()).collection('comments').get();
+        if (snapshot.empty) return comments;
+        snapshot.forEach((doc: any) => {
+            const comment: Comment = doc.data();
+            comment.id = doc.id;
+            if(doc.get("timestamp") != null) {
+                comment.datetime = doc.get("timestamp")._seconds.toString()
+            } else {
+                comment.datetime = "0"
+            }
+            console.log(comment.datetime);
+            comments.push(comment);
+        });
+        await Promise.all(comments.map(async (value: any,index: any) => {
+            comments[index].user = await getUser(value.id_user);
+        }));
+        /*Realtime database */
+        /*await realtime.ref('anime/' + id.toString() + '/comments').once('value').then((snap: any) => snap.val()).then((val: any) => {
+            val.map(function (value: any, index: any) {
+                comments.push(value);
+            });
+        });
+        await Promise.all(comments.map(async (value: any,index: any) => {
+            comments[index].user = await getUser(value.id_user);
+        }));*/
+    }catch(error){
+        console.log(error);
+    }   
+    return comments;
+}
+
+export async function setComment(message: String, idUser: String,idAnime: number){
+    let status = "error";
+    try {
+        /* Firestore */
+        await firestore.collection('anime').doc(idAnime.toString()).collection('comments').add({
+            id_user: idUser,
+            message: message,
+            timestamp: FieldValue.serverTimestamp()
+        });
+        /* Realtime database */
+        /*await realtime.ref('anime/' + idAnime + '/comments').push().set({
+            id_user: idUser,
+            message: message
+        });*/
+        status = "OK";
+    } catch (error) {
+        console.log(error);
+    }
+    return status;
+}
+
+export async function setLikesOrDislikes(idUser: String,type: String,idAnime: number,idComment: String){
+    let status = "";
+    try {
+        /* Firestore */
+        if(type == "likes"){
+            await firestore.collection('anime').doc(idAnime.toString()).collection('comments').doc(idComment).update({
+                likes: FieldValue.arrayUnion(idUser)
+            });
+            await firestore.collection('anime').doc(idAnime.toString()).collection('comments').doc(idComment).update({
+                dislikes: FieldValue.arrayRemove(idUser)
+            });
+        }else{
+            await firestore.collection('anime').doc(idAnime.toString()).collection('comments').doc(idComment).update({
+                dislikes: FieldValue.arrayUnion(idUser)
+            });
+            await firestore.collection('anime').doc(idAnime.toString()).collection('comments').doc(idComment).update({
+                likes: FieldValue.arrayRemove(idUser)
+            });
+        }
+        /* Realtime database */
+        //await realtime.ref('anime/' + idAnime.toString() + '/comments/' + idComment).child(type).set(likesOrDislikes);
+        status = "OK.";
+    } catch (error) {
+        console.log(error);
+    }
+    return status;
 }
 
 export async function getPictures(url: string) {
@@ -93,7 +287,7 @@ export async function getPictures(url: string) {
     }
 }
 
-export async function getAnimeData(idA: number,hentai_status: boolean) {
+export async function getAnimeData(idA: number, hentai_status: boolean) {
     try {
         const uri = 'https://myanimelist.net/anime/' + idA;
         const { data } = await axios.get(uri);
@@ -228,7 +422,7 @@ export async function getAnimeData(idA: number,hentai_status: boolean) {
                             const dataD = fromData.split(' ');
                             const month = getNumberMonth(dataD[0]);
                             var day = 0;
-                            if(Number(dataD[1])<=31){
+                            if (Number(dataD[1]) <= 31) {
                                 day = Number(dataD[1]);
                             }
                             const year = Number(dataD[2]);
@@ -252,25 +446,32 @@ export async function getAnimeData(idA: number,hentai_status: boolean) {
             }
         });
         if (episodes == 0) {
-            if(hentai_status){
+            if (hentai_status) {
                 episodes = await getCountHEpisodes(title);
-            }else{
+            } else {
                 episodes = await getCountEpisodes(title);
-            }            
+            }
         }
         const aired: Aired = { from, to };
         var synopsis = await translate(synopsisNT, "es");
-        const anime: Anime = { id, title, url_img, synopsis, score, episodes, synonyms, type, status, broadcast, source, genres, duration, rating, url_video, studio, external_links, related_anime, recommendations, aired, url_characters };
+        var dub_spa_enable = false;
+        await realtime.ref('animes_spanish/'+id.toString()).once('value', (data:any) => {
+            if(data.exists()){
+                dub_spa_enable = true;
+            }
+        });
+        console.log("animeStatusDub : " + dub_spa_enable);
+        const anime: Anime = { id, title, url_img, synopsis, score, episodes, synonyms, type, status, broadcast, source, genres, duration, rating, url_video, studio, external_links, related_anime, recommendations, aired, url_characters,dub_spa_enable };
         return anime;
     } catch (error) {
         console.log(error);
     }
 }
 
-async function getCountHEpisodes(title: string){
+async function getCountHEpisodes(title: string) {
     var episodes = 0;
     try {
-        var name = title.replace('.','').replace(', ','-').replace(': ','-').replace(/\s/g,'-').replace('!','').toLowerCase();
+        var name = title.replace('.', '').replace(', ', '-').replace(': ', '-').replace(/\s/g, '-').replace('!', '').toLowerCase();
         const names = await getDataOnDB('hentai');
         names.map(function (i: any, value: any) {
             if (i.includes(title)) {
@@ -285,7 +486,7 @@ async function getCountHEpisodes(title: string){
         const { data } = await axios.get(url);
         const $ = cheerio.load(data);
         const count = $('.episodes-list > article');
-        count.map(function(i:any,value:any){
+        count.map(function (i: any, value: any) {
             episodes++;
         });
         return episodes;
