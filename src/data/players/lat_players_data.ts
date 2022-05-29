@@ -11,7 +11,7 @@ admin.initializeApp({
     databaseURL: 'https://testingproject-6874f-default-rtdb.firebaseio.com'
 });
 
-export async function getLatEpisodes(name: string, episode: number) {
+export async function getLatEpisodes(name: string, episode: number, idAnime: number) {
     var episodes: Episode[] = [];
     try {
         const namesLat = await getDataOnDB("latino");

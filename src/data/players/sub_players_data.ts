@@ -3,6 +3,8 @@ import { getDataOnDB } from "./lat_players_data";
 const cheerio = require('cheerio');
 const axios = require('axios').default;
 const { gotScraping } = require('got-scraping');
+const admin = require('firebase-admin');
+const firestore = admin.firestore();
 
 export interface Episode {
     type:String
@@ -10,13 +12,19 @@ export interface Episode {
     language:string
 }
 
-export async function getSubEpisodes(name:string,episode:number){
-    const urlAFX = generateUrlAFX(name,episode);
-    const urlJK = await generateUrlJK(name,episode);
-    var episodes = await getSubEpisodeAFX(urlAFX);
-    var dataJK = await getSubEpisodeJK(urlJK);
-    for (var val of dataJK){
-        episodes.push(val);
+export async function getSubEpisodes(name:string,episode:number,idAnime: number){
+    let episodes: Episode[] = [];
+    const data = await firestore.collection('last_episodes_uploaded').doc(idAnime.toString()).collection('sub_es').doc(episode.toString()).get();
+    if(data.exists){
+        episodes = data.get('episodes');
+    }else{
+        const urlAFX = generateUrlAFX(name,episode);
+        const urlJK = await generateUrlJK(name,episode);
+        episodes = await getSubEpisodeAFX(urlAFX);
+        var dataJK = await getSubEpisodeJK(urlJK);
+        for (var val of dataJK){
+            episodes.push(val);
+        }
     }
     //console.log(episodes);
     return episodes;

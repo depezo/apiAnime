@@ -43,6 +43,9 @@ export async function setFinishedAnime(id: String, idAnime: number){
         await firestore.collection('users').doc(id).collection('episodes_watched').doc(idAnime.toString()).update({
             isFinished: true
         });
+        await firestore.collection('users').doc(id).update({
+            count_anime: FieldValue.increment(1)
+        });
         status = "OK";
     } catch (error) {
         console.log(error);

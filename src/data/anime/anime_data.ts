@@ -89,6 +89,13 @@ export interface TinyAnime {
     url_page: String
 }
 
+export interface TinyAnimeLA {
+    idAnime: number
+    title: String
+    url_img: String
+    url_page: String
+}
+
 export interface Review {
     id: String
     user: UserData

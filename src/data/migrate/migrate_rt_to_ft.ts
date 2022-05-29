@@ -21,7 +21,11 @@ export async function migrateTest(){
                 firestore.collection('users').doc(value.key).set({
                     email: value.val().email,
                     username: value.val().username,
-                    url_photo: value.val().url_photo
+                    url_photo: value.val().url_photo,
+                    count_episodes: 0,
+                    count_reviews: 0,
+                    count_anime: 0,
+                    url_gif: 'https://media.tenor.com/images/ac267306ab652baa385d1021e37d5627/tenor.gif'
                 });
                 if(value.child('animes_fav').val() != null){
                     value.child('animes_fav').val().forEach(async (e: any) =>{
@@ -36,7 +40,8 @@ export async function migrateTest(){
                 if(value.child('episodes_watched').hasChildren()){ 
                     value.child('episodes_watched').forEach((e: DataSnapshot) =>{
                         firestore.collection('users').doc(value.key).collection('episodes_watched').doc(e.key).set({
-                            episodes: e.val()
+                            episodes: e.val(),
+                            isFinished: false
                         });
                     }); 
                 }                               

@@ -4,6 +4,27 @@ type Query {
     getHEpisodes(name:String,episode:Int): [Episode]
 }
 
+type Mutation {
+    setLastEpisodeUploaded(tinyAnime: TinyAnimeLAInput, nameEpisode: String!, url_img: String!, episode: Int!, language: String!, episodes: [String]!): String
+}
+
+input TinyAnimeLAInput {
+    idAnime: Int
+    title: String
+    url_img: String
+    url_page:String
+}
+
+type LastEpisodeUploaded {
+    idAnime: Int
+    nameAnime: String
+    nameEpisode: String
+    url_img: String
+    episode: Int
+    language: String
+    episodes: [Episode]
+}
+
 type Episode {
     type:String
     url:String
