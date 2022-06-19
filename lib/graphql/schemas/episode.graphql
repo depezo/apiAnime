@@ -1,6 +1,6 @@
 type Query {
-    getSubEpisodes(name:String,episode:Int): [Episode]
-    getLatEpisodes(name:String,episode:Int): [Episode]
+    getSubEpisodes(name:String,episode:Int,idAnime: Int): [Episode]
+    getLatEpisodes(name:String,episode:Int, idAnime: Int): [Episode]
     getHEpisodes(name:String,episode:Int): [Episode]
 }
 
@@ -13,6 +13,8 @@ input TinyAnimeLAInput {
     title: String
     url_img: String
     url_page:String
+    episodes: Int
+    synopsis: String
 }
 
 type LastEpisodeUploaded {

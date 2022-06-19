@@ -13,6 +13,8 @@ input TinyAnimeLAInput {
     title: String
     url_img: String
     url_page:String
+    episodes: Int
+    synopsis: String
 }
 
 type LastEpisodeUploaded {

@@ -54,7 +54,14 @@ export async function getSearchDataAnime(url:string,hentai_status:boolean){
                         case 1:
                             title = $(value).find('.hoverinfo_trigger > strong').text();
                             const synopsisNT = String($(value).find('.pt4').text()).replace('read more.','');
-                            synopsis = translate(synopsisNT, 'es');
+                            synopsis = synopsisNT;
+                            try {
+                                if(synopsis != ''){
+                                    synopsis = translate(synopsisNT, 'es'); 
+                                }                              
+                            } catch (error) {
+                                console.log(error);
+                            }
                             const dataHover = String($(value).find('.hoverinfo-contaniner').text());
                             break;
                         case 2:

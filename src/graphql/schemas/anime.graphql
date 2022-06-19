@@ -4,6 +4,7 @@ type Query {
     getPictures(url:String): [Picture]
     getComments(id: Int): [Comment]
     getReviewsByAnime(id: Int): [Review]
+    getTopReviews: [Review]
     getBestReviewWeek: [Review]
 }
 

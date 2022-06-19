@@ -94,6 +94,8 @@ export interface TinyAnimeLA {
     title: String
     url_img: String
     url_page: String
+    episodes: number
+    synopsis: String
 }
 
 export interface Review {
@@ -103,6 +105,26 @@ export interface Review {
     anime: TinyAnime
     likes: String[]
     datetime: String
+}
+
+export async function getTopReviews(){
+    let reviews: Review[] = []
+    try {
+        const data = await firestore.collection('reviews').orderBy('count_likes','desc').limit(10).get();
+        data.forEach((doc: any) => {
+            const review: Review = doc.data();
+            review.id = doc.id;
+            review.datetime = doc.get("timestamp")._seconds.toString()
+            reviews.push(review);
+        });
+        await Promise.all(reviews.map(async (value: any,index: any) => {
+            reviews[index].user = await getUser(value.id_user);
+        }));
+        //console.log('executing query: ', reviews.length);
+    } catch (error) {
+        console.log(error);
+    } 
+    return reviews;
 }
 
 export async function getBestReviewWeek(){
@@ -118,7 +140,7 @@ export async function getBestReviewWeek(){
         await Promise.all(reviews.map(async (value: any,index: any) => {
             reviews[index].user = await getUser(value.id_user);
         }));
-        console.log('executing query: ', reviews.length);
+        //console.log('executing query: ', reviews.length);
     } catch (error) {
         console.log(error);
     }
@@ -132,11 +154,13 @@ export async function setLikeReview(idUser: String,type: String,idAnime: number,
         console.log(type,idAnime,idReview, " - ", idUser);
         if(type == "likes"){
             await firestore.collection('reviews').doc(idReview).update({
-                likes: FieldValue.arrayUnion(idUser)
+                likes: FieldValue.arrayUnion(idUser),
+                count_likes: FieldValue.increment(1)
             });
         }else{
             await firestore.collection('reviews').doc(idReview).update({
-                likes: FieldValue.arrayRemove(idUser)
+                likes: FieldValue.arrayRemove(idUser),
+                count_likes: FieldValue.increment(-1)
             });
         }
         /* Realtime database */

@@ -7,46 +7,52 @@ const { gotScraping } = require('got-scraping');
 
 admin.initializeApp({
     credential: admin.credential.cert(serviceAccount),
-    //databaseURL: 'https://animeapp2test-default-rtdb.firebaseio.com/'
-    databaseURL: 'https://testingproject-6874f-default-rtdb.firebaseio.com'
+    databaseURL: 'https://animeapp2test-default-rtdb.firebaseio.com/'
+    //databaseURL: 'https://testingproject-6874f-default-rtdb.firebaseio.com'
 });
+const firestore = admin.firestore();
 
 export async function getLatEpisodes(name: string, episode: number, idAnime: number) {
     var episodes: Episode[] = [];
     try {
-        const namesLat = await getDataOnDB("latino");
-        var source = '';
-        var secondNameAHD = '';
-        var nameHej = '';
-        var typeHej = '';
-        namesLat.map(function (i: any, value: any) {
-            if (i.includes(name)) {
-                if (i.includes('#')) {
-                    if(i.split('#')[0]===name){
-                        source = 'ahd';
-                        secondNameAHD = i.split('#')[1];
-                    }                    
-                }else if(i.includes(',,')){
-                    if(i.split(',,')[0]===name){
-                        if(i.includes(';')){
-                            typeHej = 'm';
-                            source = 'hej';
-                            nameHej = i.split(',,;')[1];
-                        }else{
-                            typeHej = 'e';
-                            source = 'hej';
-                            nameHej = i.split(',,')[1];
-                        }
-                    }    
+        const data = await firestore.collection('last_episodes_uploaded').doc(idAnime.toString()).collection('dub_es').doc(episode.toString()).get();
+        if(data.exists){
+            episodes = data.get('episodes');
+        }else{
+            const namesLat = await getDataOnDB("latino");
+            var source = '';
+            var secondNameAHD = '';
+            var nameHej = '';
+            var typeHej = '';
+            namesLat.map(function (i: any, value: any) {
+                if (i.includes(name)) {
+                    if (i.includes('#')) {
+                        if(i.split('#')[0]===name){
+                            source = 'ahd';
+                            secondNameAHD = i.split('#')[1];
+                        }                    
+                    }else if(i.includes(',,')){
+                        if(i.split(',,')[0]===name){
+                            if(i.includes(';')){
+                                typeHej = 'm';
+                                source = 'hej';
+                                nameHej = i.split(',,;')[1];
+                            }else{
+                                typeHej = 'e';
+                                source = 'hej';
+                                nameHej = i.split(',,')[1];
+                            }
+                        }    
+                    }
                 }
+            });
+            if (source == 'ahd' || source == '') {
+                const urlAHD = generateUrlAHD(source == 'ahd' ? secondNameAHD : name, episode);
+                episodes = await getLatEpisodesAHD(urlAHD);
+            }else if(source == 'hej'){
+                const urlHEJ = generateUrlHEJ(nameHej, episode,typeHej);
+                episodes = await getLatEpisodesHEJ(urlHEJ);
             }
-        });
-        if (source == 'ahd' || source == '') {
-            const urlAHD = generateUrlAHD(source == 'ahd' ? secondNameAHD : name, episode);
-            episodes = await getLatEpisodesAHD(urlAHD);
-        }else if(source == 'hej'){
-            const urlHEJ = generateUrlHEJ(nameHej, episode,typeHej);
-            episodes = await getLatEpisodesHEJ(urlHEJ);
         }
         return episodes;
     } catch (error) {

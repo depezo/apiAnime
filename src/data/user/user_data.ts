@@ -37,7 +37,7 @@ interface EpisodesW {
     isFinished: Boolean
 }
 
-export async function setFinishedAnime(id: String, idAnime: number){
+export async function setFinishedAnime(id: String, idAnime: number) {
     let status = "";
     try {
         await firestore.collection('users').doc(id).collection('episodes_watched').doc(idAnime.toString()).update({
@@ -53,19 +53,19 @@ export async function setFinishedAnime(id: String, idAnime: number){
     return status;
 }
 
-export async function getReviewsByUser(id: String){
+export async function getReviewsByUser(id: String) {
     let reviews: Review[] = [];
     try {
         console.log("id user", id)
-        const snapshot = await firestore.collection('reviews').where('id_user','==',id).get();
-        if(snapshot.empty) return reviews;
+        const snapshot = await firestore.collection('reviews').where('id_user', '==', id).get();
+        if (snapshot.empty) return reviews;
         snapshot.forEach((doc: any) => {
             const review: Review = doc.data();
             review.id = doc.id;
             review.datetime = doc.get("timestamp")._seconds.toString()
             reviews.push(review);
         });
-        await Promise.all(reviews.map(async (value: any,index: any) => {
+        await Promise.all(reviews.map(async (value: any, index: any) => {
             reviews[index].user = await getUser(value.id_user);
         }));
     } catch (error) {
@@ -74,7 +74,7 @@ export async function getReviewsByUser(id: String){
     return reviews;
 }
 
-export async function updateRol(id: String, rol: Rol){
+export async function updateRol(id: String, rol: Rol) {
     let status = "";
     try {
         await firestore.collection('users').doc(id).update({
@@ -87,8 +87,8 @@ export async function updateRol(id: String, rol: Rol){
     return status;
 }
 
-export async function getRoles(){
-    const roles : Rol[] = [];
+export async function getRoles() {
+    const roles: Rol[] = [];
     try {
         const data = await firestore.collection('roles').get();
         data.forEach((value: any) => {
@@ -100,7 +100,7 @@ export async function getRoles(){
     return roles;
 }
 
-export async function getUserData(id: String){
+export async function getUserData(id: String) {
     let user = {} as UserData
     try {
         const data = await firestore.collection("users").doc(id).get();
@@ -111,14 +111,14 @@ export async function getUserData(id: String){
     }
 }
 
-export async function setLastViewed(id: String,add: Anime, removeId: String, withRemoved: Boolean){
+export async function setLastViewed(id: String, add: Anime, removeId: String, withRemoved: Boolean) {
     let status = "";
     try {
-        console.log("data: ",id);
-        console.log("data: ",add.id);
-        console.log("data: ",withRemoved);
-        console.log("data: ",removeId);
-        if (withRemoved){
+        console.log("data: ", id);
+        console.log("data: ", add.id);
+        console.log("data: ", withRemoved);
+        console.log("data: ", removeId);
+        if (withRemoved) {
             await firestore.collection('users').doc(id).collection('last_anime').doc(removeId).delete();
             await firestore.collection('users').doc(id).collection('last_anime').add({
                 id: add.id,
@@ -129,8 +129,8 @@ export async function setLastViewed(id: String,add: Anime, removeId: String, wit
                 type: add.type,
                 url_img: add.url_img,
                 datetime: FieldValue.serverTimestamp()
-            });        
-        }else{
+            });
+        } else {
             await firestore.collection('users').doc(id).collection('last_anime').add({
                 id: add.id,
                 title: add.title,
@@ -149,11 +149,11 @@ export async function setLastViewed(id: String,add: Anime, removeId: String, wit
     return status;
 }
 
-export async function updateAnimesFav(id: String,anime: Anime,type: String){
+export async function updateAnimesFav(id: String, anime: Anime, type: String) {
     let status = "";
     try {
         //console.log(type, anime.id);
-        if(type == "add"){
+        if (type == "add") {
             await firestore.collection('users').doc(id).collection('animes_fav').doc(anime.id.toString()).set({
                 id: anime.id,
                 title: anime.title,
@@ -163,7 +163,7 @@ export async function updateAnimesFav(id: String,anime: Anime,type: String){
                 type: anime.type,
                 url_img: anime.url_img
             });
-        }else{
+        } else {
             await firestore.collection('users').doc(id).collection('animes_fav').doc(anime.id.toString()).delete();
         }
         status = "OK";
@@ -173,11 +173,11 @@ export async function updateAnimesFav(id: String,anime: Anime,type: String){
     return status;
 }
 
-export async function getAnimesFav(id: String){
+export async function getAnimesFav(id: String) {
     var animes: Anime[] = [];
     try {
         const data = await firestore.collection('users').doc(id).collection('animes_fav').get();
-        data.forEach((value: any) =>{
+        data.forEach((value: any) => {
             animes.push(value.data());
             //console.log(value.get('synopsis'));
         });
@@ -187,7 +187,7 @@ export async function getAnimesFav(id: String){
     return animes;
 }
 
-export async function updatePhoto(id: String, newPhoto: String){
+export async function updatePhoto(id: String, newPhoto: String) {
     let status = "";
     try {
         await firestore.collection('users').doc(id).update({
@@ -202,7 +202,7 @@ export async function updatePhoto(id: String, newPhoto: String){
     return status;
 }
 
-export async function updateGif(id: String, newGif: String){
+export async function updateGif(id: String, newGif: String) {
     let status = "";
     try {
         await firestore.collection('users').doc(id).update({
@@ -217,7 +217,7 @@ export async function updateGif(id: String, newGif: String){
     return status;
 }
 
-export async function updateUsername(id: String, username: String){
+export async function updateUsername(id: String, username: String) {
     let status = "";
     try {
         await firestore.collection('users').doc(id).update({
@@ -232,7 +232,7 @@ export async function updateUsername(id: String, username: String){
     return status;
 }
 
-export async function setEpisodesW(id: String,idAnime: number,ew: number){
+export async function setEpisodesW(id: String, idAnime: number, ew: number) {
     let status = "";
     try {
         /* Firestore */
@@ -252,7 +252,7 @@ export async function setEpisodesW(id: String,idAnime: number,ew: number){
     return status;
 }
 
-export async function getEpisodesW(id: String,idAnime: number){
+export async function getEpisodesW(id: String, idAnime: number) {
     let episodes_watched = {} as EpisodesW;
     try {
         /* Firestore */
@@ -269,7 +269,7 @@ export async function getEpisodesW(id: String,idAnime: number){
     return episodes_watched;
 }
 
-export async function createUser(email: String,id: String){
+export async function createUser(email: String, id: String) {
     let status = "";
     try {
         /* Firestore */
@@ -282,7 +282,7 @@ export async function createUser(email: String,id: String){
             count_reviews: 0
         });
         /* Realtime database */
-        await realtime.ref('users/'+id).set({
+        await realtime.ref('users/' + id).set({
             email: email,
             username: email.split('@')[0],
             url_photo: DEFAULT_URL_PHOTO
@@ -297,14 +297,34 @@ export async function createUser(email: String,id: String){
 
 export async function getUser(id: String) {
     /* Firestore */
-    const data = await firestore.collection('users').doc(id).get();
-    const user: UserData = data.data();
-    user.id = id;
-    /* Realtime Database */
-    //let user = {} as User;
-    /*await realtime.ref('users/' + id ).once('value', (data:any) => {
-        user = data.val();
-    });*/
-    //user.id = id;
+    let user = {} as UserData;
+    try {
+        const data = await firestore.collection('users').doc(id).get();
+        user = data.data();
+        user.id = id;
+        /* Realtime Database */
+        //let user = {} as User;
+        /*await realtime.ref('users/' + id ).once('value', (data:any) => {
+            user = data.val();
+        });*/
+        //user.id = id;
+    } catch (e) {
+        console.log(e);
+    }
+    if(user == null){
+        user = {} as UserData;
+        user.id = id;
+        user.username = 'Sin configurar';
+        user.url_photo = 'https://firebasestorage.googleapis.com/v0/b/animeapp-a8b2c.appspot.com/o/img_perfil%2Fasta.jpg?alt=media&token=698fb5f9-7d4b-49d3-bd55-7ec184d7f4bf';
+        user.count_anime = 0;
+        user.count_episodes = 0;
+        user.count_reviews = 0;
+        user.rol = {
+            color: '#5c007a',
+            description: 'Anonimo',
+            selectable: true,
+        };
+        user.url_gif = 'https://media.tenor.com/images/ac267306ab652baa385d1021e37d5627/tenor.gif';
+    }
     return user;
 }

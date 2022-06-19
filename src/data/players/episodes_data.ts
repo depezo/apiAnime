@@ -23,8 +23,8 @@ export async function setLastEpisodeUploaded(tinyAnime: TinyAnimeLA, nameEpisode
         leu.url_img = url_img;
         leu.episode = episode;
         const episodesA: Episode[] = [];
-        for (let item of episodes){
-            episodesA.push(await getEpisodesFromUrl(item,language));
+        for (let item of episodes) {
+            episodesA.push(await getEpisodesFromUrl(item, language));
         }
         leu.episodes = episodesA;
         await firestore.collection('last_episodes_uploaded').doc(tinyAnime.idAnime.toString()).collection(language).doc(episode.toString()).set(leu);
@@ -44,34 +44,18 @@ export async function setLastEpisodeUploaded(tinyAnime: TinyAnimeLA, nameEpisode
     return status;
 }
 
-async function getEpisodesFromUrl(episode_url: String,language: String) {
+async function getEpisodesFromUrl(episode_url: String, language: String) {
     let new_url = episode_url.split('$#@*')[1];
     let type = 'secondary';
     const episode = {} as Episode;
     episode.language = language.toString();
     try {
         switch (episode_url.split('$#@*')[0]) {
-            case 'fembed':
+            case 'primary':
                 new_url = episode_url.split('$#@*')[1];
-                type = 'secondary'
+                type = 'primary'
                 break;
-            case 'mega':
-                new_url = episode_url.split('$#@*')[1];
-                type = 'secondary'
-                break;
-            case 'okru':
-                new_url = episode_url.split('$#@*')[1].replace('/video/','/videoembed/');
-                type = 'secondary'
-                break;
-            case 'yourupload':
-                new_url = episode_url.split('$#@*')[1];
-                type = 'secondary'
-                break;
-            case 'mp4upload':
-                new_url = episode_url.split('$#@*')[1];
-                type = 'secondary'
-                break;
-            case 'sendvid':
+            case 'secondary':
                 new_url = episode_url.split('$#@*')[1];
                 type = 'secondary'
                 break;

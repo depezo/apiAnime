@@ -42,14 +42,27 @@ async function generateUrlJK(name:string,episode:number){
     const names = await getDataOnDB('sub_es');
     names.map(function(i:any,value:any){
         if (i.includes(name)) {
-            if(i.split(',')[0]===name){
+            const values = i.split(',');
+            let newName = '';
+            for (let i = 0; i < values.length; i++) {
+                if(i!=values.length-1){
+                    if(i==0){
+                        newName = values[i];
+                    }else{
+                        newName = newName + ',' + values[i];
+                    }                    
+                }
+              }
+            console.log(newName);
+            if(newName===name){
                 if (i.includes(',')) {
-                    nameJK = i.split(',')[1];
+                    nameJK = values[values.length-1];
                 } 
             }            
         }
     });
     const url = 'https://jkanime.net/' + nameJK + '/' + episode;
+    console.log('nameJK: ',url);
     return url;
 }
 
