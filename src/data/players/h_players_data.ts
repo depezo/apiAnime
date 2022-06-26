@@ -23,12 +23,16 @@ export async function getHEpisodes(name:string,episode:number) {
                             type: 'primary',
                             url: String(json[value][1]).replace('/direct.html#', ''),
                             language: 'sub_es',
+                            downloable: false,
+                            type_downloable: ""
                         })
                     } else {
                         episodes.push({
                             type: 'secondary',
                             url: json[value][1],
                             language: 'sub_es',
+                            downloable: false,
+                            type_downloable: ""
                         })
                     }
                 });

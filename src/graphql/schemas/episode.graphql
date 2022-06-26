@@ -31,4 +31,12 @@ type Episode {
     type:String
     url:String
     language:String
+    downloable: Boolean
+    type_downloable: TypeDownloable
+}
+
+enum TypeDownloable {
+    NONE
+    DIRECT
+    WEB
 }

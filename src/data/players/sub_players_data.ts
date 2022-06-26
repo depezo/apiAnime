@@ -10,6 +10,8 @@ export interface Episode {
     type:String
     url:String
     language:string
+    downloable: Boolean
+    type_downloable: String
 }
 
 export async function getSubEpisodes(name:string,episode:number,idAnime: number){
@@ -85,7 +87,9 @@ async function getSubEpisodeAFX(url:string) {
                 episodes.push({
                     type:'secondary',
                     url:iframe('iframe').attr('src'),
-                    language:'sub_es'
+                    language:'sub_es',
+                    downloable: false,
+                    type_downloable: "NONE"
                 });
             }
         }
@@ -153,14 +157,18 @@ async function getSubEpisodeJK(url:string) {
                     episodes.push({
                         type:'primary',
                         url: dataU,
-                        language:'sub_es'
+                        language:'sub_es',
+                        downloable: false,
+                        type_downloable: "NONE"
                     });
                 }                
             }else{
                 episodes.push({
                     type:'secondary',
                     url: val,
-                    language:'sub_es'
+                    language:'sub_es',
+                    downloable: false,
+                    type_downloable: "NONE"
                 });
             }
         }

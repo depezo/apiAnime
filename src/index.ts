@@ -3,6 +3,7 @@ import cors from 'cors';
 import { schema } from './graphql';
 import { migrateTest } from './data/migrate/migrate_rt_to_ft';
 import { AuthenticationError } from 'apollo-server-express';
+import { getFireloadPrimary } from './data/players/lat_players_data';
 
 const functions = require('firebase-functions');
 const { ApolloServer, gpl } = require('apollo-server-express');
@@ -21,10 +22,12 @@ async function startApolloServer() {
     });
     await server.start();
     server.applyMiddleware({ app, path: '/' });
-    app.listen(5000, () => {
+    app.listen(5001, () => {
         console.log("Server anime start in: http://localhost:5000");
     });
     //exports.graphql = functions.https.onRequest(app);
 }
+
+//getFireloadPrimary('https://www.fireload.com/997699fd1c945108/h0r1y1m4_l4t_10.mp4');
 
 startApolloServer();

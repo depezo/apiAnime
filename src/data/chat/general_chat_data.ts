@@ -38,11 +38,13 @@ export async function sendTypeMessage(message: String, user: UserData,type: Stri
     } catch (error) {
         console.log(error);
     }
+    return status;
 }
 
 export async function sendMessage(message: String, user: UserData){
     let status = "";
     try {
+        console.log(message);
         await firestore.collection('chat').doc('general').collection('messages').add({
             message: message,
             user: user,
@@ -52,4 +54,5 @@ export async function sendMessage(message: String, user: UserData){
     } catch (error) {
         console.log(error);
     }
+    return status;
 }
