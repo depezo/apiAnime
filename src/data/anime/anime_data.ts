@@ -105,18 +105,55 @@ export interface Review {
     anime: TinyAnime
     likes: String[]
     datetime: String
+    count_likes: number
+}
+
+interface Banner {
+    url_img: String
+    anime: TinyAnimeLA
+}
+
+export async function getBanners(){
+    let banners: Banner[] = [];
+    try {
+        const data = await firestore.collection('banners').where('enable','==',true).orderBy('datetime','desc').limit(10).get();
+        data.forEach((doc: any) => {
+            const banner: Banner = doc.data();
+            banners.push(banner);
+        });
+    } catch (error) {
+        console.log(error);
+    }
+    return banners;
 }
 
 export async function getTopReviews(){
-    let reviews: Review[] = []
+    let reviews: Review[] = [];
     try {
-        const data = await firestore.collection('reviews').orderBy('count_likes','desc').limit(10).get();
+        const end = Date.now();
+        const start = end - (60*60*24*8*1000);
+        console.log(start  + ' - ' + end);
+        const startDate = new Date(start);
+        const endDate= new Date(end);
+        const data = await firestore.collection('reviews').orderBy('timestamp','desc').where('timestamp','<',endDate).where('timestamp','>',startDate).orderBy('count_likes','desc').limit(10).get();
         data.forEach((doc: any) => {
             const review: Review = doc.data();
             review.id = doc.id;
             review.datetime = doc.get("timestamp")._seconds.toString()
             reviews.push(review);
         });
+        const sortedReview: Review[] = reviews.sort((n1,n2) => {
+            if (n1.count_likes > n2.count_likes) {
+                return -1;
+            }
+        
+            if (n1.count_likes < n2.count_likes) {
+                return 1;
+            }
+        
+            return 0;
+        });
+        reviews = sortedReview;
         await Promise.all(reviews.map(async (value: any,index: any) => {
             reviews[index].user = await getUser(value.id_user);
         }));

@@ -4,6 +4,7 @@ const axios = require('axios').default;
 const serviceAccount = require('../../animeapp-a8b2c-firebase-adminsdk-qul5q-c256baff7f.json');
 const admin = require('firebase-admin');
 const { gotScraping } = require('got-scraping');
+const puppeteer = require('puppeteer');
 
 admin.initializeApp({
     credential: admin.credential.cert(serviceAccount),
@@ -65,8 +66,10 @@ function getPrimaryAndDownload(episodes: Episode[]) {
     try {
         for (const item of episodes){
             switch (item.url){
-                case "fireload.com":
-                    return getFireloadPrimary(item.url);
+                /*case "fireload.com":
+                    return getFireloadPrimary(item.url);*/
+                case 'fembed.com':
+                    return getFembedPrimary(item.url);
             }
         }
     } catch (error) {
@@ -74,7 +77,22 @@ function getPrimaryAndDownload(episodes: Episode[]) {
     }
 }
 
-export async function getFireloadPrimary(url: String){
+async function getFembedPrimary(url: String){
+    const browser = await puppeteer.launch({headless: false});
+    const page = await browser.newPage();
+    try {
+        await page.goto(url);
+        
+        //await page.click('.loading-container');
+        //await page.waitForSelector('[class="loading-container"]'); 
+        browser.close();
+    } catch (error) {
+        browser.close()
+        console.log(error);
+    }
+}
+
+async function getFireloadPrimary(url: String){
     try {
         const {data} = await axios.get(url);
         const $ = cheerio.load(data);
@@ -141,7 +159,8 @@ async function getLatEpisodesHEJ(url: string) {
                 url: url,
                 language: 'lat',
                 downloable: false,
-                type_downloable: "NONE"
+                type_downloable: "NONE",
+                url_download: ''
             });
         });
         //console.log(episodes);
@@ -172,7 +191,8 @@ async function getLatEpisodesAHD(url: string) {
                         url: val.code,
                         language: 'lat',
                         downloable: downloable,
-                        type_downloable: type_downloable
+                        type_downloable: type_downloable,
+                        url_download: val.code
                     });
                 } else {
                     episodes.push({
@@ -180,7 +200,8 @@ async function getLatEpisodesAHD(url: string) {
                         url: val.code,
                         language: 'lat',
                         downloable: false,
-                        type_downloable: "NONE"
+                        type_downloable: "NONE",
+                        url_download: ''
                     });
                 }
             }

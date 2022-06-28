@@ -1,4 +1,4 @@
-import { getAnimeData, getBestReviewWeek, getComments, getPictures, getReviewsByAnime, getTopReviews, setComment, setLikeReview, setLikesOrDislikes, setReview } from "../../data/anime/anime_data";
+import { getAnimeData, getBanners, getBestReviewWeek, getComments, getPictures, getReviewsByAnime, getTopReviews, setComment, setLikeReview, setLikesOrDislikes, setReview } from "../../data/anime/anime_data";
 
 const animeResolver = {
     Query: {
@@ -19,6 +19,9 @@ const animeResolver = {
         },
         getTopReviews(root: void, args: any){
             return getTopReviews();
+        },
+        getBanners(root: void, args: void){
+            return getBanners();
         }
     },
     Mutation: {

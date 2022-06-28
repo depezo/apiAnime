@@ -24,7 +24,8 @@ export async function getHEpisodes(name:string,episode:number) {
                             url: String(json[value][1]).replace('/direct.html#', ''),
                             language: 'sub_es',
                             downloable: false,
-                            type_downloable: ""
+                            type_downloable: "",
+                            url_download: ''
                         })
                     } else {
                         episodes.push({
@@ -32,7 +33,8 @@ export async function getHEpisodes(name:string,episode:number) {
                             url: json[value][1],
                             language: 'sub_es',
                             downloable: false,
-                            type_downloable: ""
+                            type_downloable: "",
+                            url_download: ''
                         })
                     }
                 });

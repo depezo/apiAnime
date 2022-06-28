@@ -37,6 +37,28 @@ interface EpisodesW {
     isFinished: Boolean
 }
 
+interface TypeImage {
+    id: String
+    description: String
+    url_img: String
+    images: String[]
+}
+
+export async function getTypeImages(){
+    const types: TypeImage[] = [];
+    try {
+        const data = await firestore.collection('img_profile').get();
+        data.forEach((doc: any) => {
+            const type: TypeImage = doc.data();
+            type.id = doc.id;
+            types.push(type);
+        });
+    } catch (error) {
+        console.log(error);
+    }
+    return types;
+}
+
 export async function setFinishedAnime(id: String, idAnime: number) {
     let status = "";
     try {

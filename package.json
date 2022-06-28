@@ -30,6 +30,7 @@
     "graphql-tools": "^8.2.0",
     "jsonwebtoken": "^8.5.1",
     "ncp": "^2.0.0",
+    "puppeteer": "^15.1.1",
     "translate": "^1.4.1"
   },
   "devDependencies": {
