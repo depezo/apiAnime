@@ -6,6 +6,7 @@ type Query {
     getReviewsByAnime(id: Int): [Review]
     getTopReviews: [Review]
     getBestReviewWeek: [Review]
+    getBanners: [Banner]
 }
 
 type Mutation {
@@ -122,6 +123,11 @@ type Review {
     anime: TinyAnime
     likes: [String]
     datetime: String
+}
+
+type Banner {
+    url_img: String
+    anime: TinyAnime
 }
 
 input TinyAnimeInput {

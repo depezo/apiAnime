@@ -1,4 +1,5 @@
 import { TinyAnime, TinyAnimeLA } from "../anime/anime_data";
+import { getPrimaryAndDownload } from "./lat_players_data";
 import { Episode } from "./sub_players_data";
 
 const admin = require('firebase-admin');
@@ -14,7 +15,21 @@ interface LastEpisodeUploaded {
     episodes: Episode[]
 }
 
-export async function setLastEpisodeUploaded(tinyAnime: TinyAnimeLA, nameEpisode: String, url_img: String, episode: number, language: String, episodes: String[]) {
+export async function getLastEpisodeUploaded(idAnime: number){
+    let episodes: Episode[] = [];
+    try {
+        const data = await firestore.collection('last_episodes_uploaded').doc(idAnime.toString()).get();
+        if (data.exists) {
+            episodes = data.get('episodes');
+            episodes = await getPrimaryAndDownload(episodes);
+        }
+    } catch (error) {
+        console.log(error);
+    }
+    return episodes;
+}
+
+export async function setLastEpisodeUploaded(tinyAnime: TinyAnimeLA, nameEpisode: String, url_img: String, episode: number, language: String, episodes: Episode[]) {
     let status = "";
     try {
         const leu = {} as LastEpisodeUploaded;
@@ -22,11 +37,11 @@ export async function setLastEpisodeUploaded(tinyAnime: TinyAnimeLA, nameEpisode
         leu.nameEpisode = nameEpisode;
         leu.url_img = url_img;
         leu.episode = episode;
-        const episodesA: Episode[] = [];
+        /*const episodesA: Episode[] = [];
         for (let item of episodes) {
-            episodesA.push(await getEpisodesFromUrl(item, language));
-        }
-        leu.episodes = episodesA;
+            episodesA.push(await getEpisodesFromUrl(item, language,isDownloable,download_url,type_download));
+        }*/
+        leu.episodes = episodes;
         await firestore.collection('last_episodes_uploaded').doc(tinyAnime.idAnime.toString()).collection(language).doc(episode.toString()).set(leu);
         await firestore.collection('last_episodes_uploaded').doc(tinyAnime.idAnime.toString()).set({
             tinyAnime: tinyAnime,
@@ -34,7 +49,7 @@ export async function setLastEpisodeUploaded(tinyAnime: TinyAnimeLA, nameEpisode
             url_img: url_img,
             episode: episode,
             language: language,
-            episodes: episodesA,
+            episodes: episodes,
             last_datetime_uploaded: FieldValue.serverTimestamp()
         });
         status = "ADDED";
@@ -44,7 +59,7 @@ export async function setLastEpisodeUploaded(tinyAnime: TinyAnimeLA, nameEpisode
     return status;
 }
 
-async function getEpisodesFromUrl(episode_url: String, language: String) {
+async function getEpisodesFromUrl(episode_url: String, language: String,isDownloable: Boolean,download_url: String,type_download: String) {
     let new_url = episode_url.split('$#@*')[1];
     let type = 'secondary';
     const episode = {} as Episode;
@@ -65,5 +80,8 @@ async function getEpisodesFromUrl(episode_url: String, language: String) {
     }
     episode.type = type;
     episode.url = new_url;
+    episode.downloable = isDownloable;
+    episode.url_download = download_url;
+    episode.type_downloable = type_download;
     return episode;
 }

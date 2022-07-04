@@ -99,9 +99,9 @@ export async function getReviewsByUser(id: String) {
 export async function updateRol(id: String, rol: Rol) {
     let status = "";
     try {
-        await firestore.collection('users').doc(id).update({
+        await firestore.collection('users').doc(id).set({
             rol: rol
-        });
+        }, { merge: true });
         status = "OK";
     } catch (error) {
         console.log(error);
@@ -212,9 +212,9 @@ export async function getAnimesFav(id: String) {
 export async function updatePhoto(id: String, newPhoto: String) {
     let status = "";
     try {
-        await firestore.collection('users').doc(id).update({
+        await firestore.collection('users').doc(id).set({
             url_photo: newPhoto
-        });
+        }, { merge: true });
         /* Realtime */
         /*await realtime.ref('users/' + id + '/url_photo').set(newPhoto);
         status = "OK";*/
@@ -227,9 +227,9 @@ export async function updatePhoto(id: String, newPhoto: String) {
 export async function updateGif(id: String, newGif: String) {
     let status = "";
     try {
-        await firestore.collection('users').doc(id).update({
+        await firestore.collection('users').doc(id).set({
             url_gif: newGif
-        });
+        }, { merge: true });
         /* Realtime */
         /*await realtime.ref('users/' + id + '/url_photo').set(newPhoto);
         status = "OK";*/
@@ -242,12 +242,12 @@ export async function updateGif(id: String, newGif: String) {
 export async function updateUsername(id: String, username: String) {
     let status = "";
     try {
-        await firestore.collection('users').doc(id).update({
+        await firestore.collection('users').doc(id).set({
             username: username
-        });
+        }, { merge: true });
         /* Realtime */
-        /*await realtime.ref('users/' + id + '/username').set(username);
-        status = "OK";*/
+        /*await realtime.ref('users/' + id + '/username').set(username);*/
+        status = "OK";
     } catch (error) {
         console.log(error);
     }
@@ -304,11 +304,11 @@ export async function createUser(email: String, id: String) {
             count_reviews: 0
         });
         /* Realtime database */
-        await realtime.ref('users/' + id).set({
+        /*await realtime.ref('users/' + id).set({
             email: email,
             username: email.split('@')[0],
             url_photo: DEFAULT_URL_PHOTO
-        });
+        });*/
         console.log(email);
         status = "OK";
     } catch (error) {

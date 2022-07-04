@@ -17,9 +17,10 @@ export async function getLatEpisodes(name: string, episode: number, idAnime: num
     var episodes: Episode[] = [];
     try {
         const data = await firestore.collection('last_episodes_uploaded').doc(idAnime.toString()).collection('dub_es').doc(episode.toString()).get();
-        if(data.exists){
+        if (data.exists) {
             episodes = data.get('episodes');
-        }else{
+            episodes = await getPrimaryAndDownload(episodes);
+        } else {
             const namesLat = await getDataOnDB("latino");
             var source = '';
             var secondNameAHD = '';
@@ -28,30 +29,30 @@ export async function getLatEpisodes(name: string, episode: number, idAnime: num
             namesLat.map(function (i: any, value: any) {
                 if (i.includes(name)) {
                     if (i.includes('#')) {
-                        if(i.split('#')[0]===name){
+                        if (i.split('#')[0] === name) {
                             source = 'ahd';
                             secondNameAHD = i.split('#')[1];
-                        }                    
-                    }else if(i.includes(',,')){
-                        if(i.split(',,')[0]===name){
-                            if(i.includes(';')){
+                        }
+                    } else if (i.includes(',,')) {
+                        if (i.split(',,')[0] === name) {
+                            if (i.includes(';')) {
                                 typeHej = 'm';
                                 source = 'hej';
                                 nameHej = i.split(',,;')[1];
-                            }else{
+                            } else {
                                 typeHej = 'e';
                                 source = 'hej';
                                 nameHej = i.split(',,')[1];
                             }
-                        }    
+                        }
                     }
                 }
             });
             if (source == 'ahd' || source == '') {
                 const urlAHD = generateUrlAHD(source == 'ahd' ? secondNameAHD : name, episode);
                 episodes = await getLatEpisodesAHD(urlAHD);
-            }else if(source == 'hej'){
-                const urlHEJ = generateUrlHEJ(nameHej, episode,typeHej);
+            } else if (source == 'hej') {
+                const urlHEJ = generateUrlHEJ(nameHej, episode, typeHej);
                 episodes = await getLatEpisodesHEJ(urlHEJ);
             }
         }
@@ -62,27 +63,78 @@ export async function getLatEpisodes(name: string, episode: number, idAnime: num
     }
 }
 
-function getPrimaryAndDownload(episodes: Episode[]) {
-    try {
-        for (const item of episodes){
-            switch (item.url){
-                /*case "fireload.com":
-                    return getFireloadPrimary(item.url);*/
-                case 'fembed.com':
-                    return getFembedPrimary(item.url);
-            }
+
+
+export async function getPrimaryAndDownload(episodes: Episode[]) {
+    let newList: Episode[] = [];
+    let mfUrl: String = '';
+    for (const item of episodes) {
+        let episode = item;
+        switch (true) {
+            case item.url.includes('sendvid.com'):
+                /*const nUrl = await getSendvidPrimary(item.url);
+                if (nUrl != item.url) {
+                    episode.url = nUrl;
+                    episode.type = 'primary';
+                }*/
+                break;
         }
+        switch (true) {
+            case item.url_download.includes('mediafire.com'):
+                if (mfUrl == '') {
+                    mfUrl = await getMediafireDirect(item.url_download);
+                    const ep: Episode = {
+                        url: mfUrl,
+                        url_download: mfUrl,
+                        type: 'primary',
+                        type_downloable: 'WEB',
+                        downloable: true,
+                        language: 'dub_es'
+                    }
+                    newList.push(ep);
+                }
+                episode.url_download = mfUrl;
+                episode.type_downloable = 'WEB';
+                break;
+        }
+
+        newList.push(episode);
+    }
+    return newList;
+}
+
+async function getMediafireDirect(url_download: String) {
+    let newUrl = url_download;
+    try {
+        const { data } = await axios.get(url_download);
+        const $ = cheerio.load(data);
+        const downloadSource = $('.download_link > .input');
+        newUrl = String(downloadSource.attr('href'));
     } catch (error) {
         console.log(error);
     }
+    return newUrl;
 }
 
-async function getFembedPrimary(url: String){
-    const browser = await puppeteer.launch({headless: false});
+async function getSendvidPrimary(url: String) {
+    let newUrl = url;
+    try {
+        const { data } = await axios.get(url);
+        const $ = cheerio.load(data);
+        const sourceData = $('.embeded > video > source');
+        newUrl = String(sourceData.attr('src'));
+    } catch (error) {
+        console.log(error);
+    }
+    return newUrl;
+}
+
+async function getFembedPrimary(url: String) {
+    const browser = await puppeteer.launch({ headless: false });
     const page = await browser.newPage();
     try {
         await page.goto(url);
-        
+
         //await page.click('.loading-container');
         //await page.waitForSelector('[class="loading-container"]'); 
         browser.close();
@@ -92,9 +144,9 @@ async function getFembedPrimary(url: String){
     }
 }
 
-async function getFireloadPrimary(url: String){
+async function getFireloadPrimary(url: String) {
     try {
-        const {data} = await axios.get(url);
+        const { data } = await axios.get(url);
         const $ = cheerio.load(data);
         const player = $('.fileInfo > .download-timer > btn');
         const urlPrimary = player.attr('href');
@@ -112,11 +164,11 @@ function generateUrlAHD(name: string, episode: number) {
     return url;
 }
 
-function generateUrlHEJ(name: string, episode: number,type:string) {
+function generateUrlHEJ(name: string, episode: number, type: string) {
     var url = '';
-    if(type=='e'){
+    if (type == 'e') {
         url = 'https://henaojara.com/ver/episode/' + name + '-espanol-latino-hd-1x' + episode;
-    }else{
+    } else {
         url = 'https://henaojara.com/' + name;
     }
     //console.log(url);
@@ -181,7 +233,7 @@ async function getLatEpisodesAHD(url: string) {
             if (val.languaje == '1') {
                 let type_downloable = "NONE";
                 let downloable = false;
-                if(String(val.code).endsWith('.mp4')){
+                if (String(val.code).endsWith('.mp4')) {
                     downloable = true;
                     type_downloable = "DIRECT"
                 }

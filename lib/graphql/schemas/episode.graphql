@@ -2,10 +2,11 @@ type Query {
     getSubEpisodes(name:String,episode:Int,idAnime: Int): [Episode]
     getLatEpisodes(name:String,episode:Int, idAnime: Int): [Episode]
     getHEpisodes(name:String,episode:Int): [Episode]
+    getLastEpisodeUploaded(idAnime: Int): [Episode]
 }
 
 type Mutation {
-    setLastEpisodeUploaded(tinyAnime: TinyAnimeLAInput, nameEpisode: String!, url_img: String!, episode: Int!, language: String!, episodes: [String]!): String
+    setLastEpisodeUploaded(tinyAnime: TinyAnimeLAInput, nameEpisode: String!, url_img: String!, episode: Int!, language: String!, episodes: [InputEpisode]!): String
 }
 
 input TinyAnimeLAInput {
@@ -31,4 +32,22 @@ type Episode {
     type:String
     url:String
     language:String
+    downloable: Boolean
+    type_downloable: TypeDownloable
+    url_download: String
+}
+
+input InputEpisode {
+    type:String
+    url:String
+    language:String
+    downloable: Boolean
+    type_downloable: TypeDownloable
+    url_download: String
+}
+
+enum TypeDownloable {
+    NONE
+    DIRECT
+    WEB
 }

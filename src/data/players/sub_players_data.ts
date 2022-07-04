@@ -1,5 +1,6 @@
 import { getDataOnDB } from "./lat_players_data";
 
+const puppeteer = require('puppeteer');
 const cheerio = require('cheerio');
 const axios = require('axios').default;
 const { gotScraping } = require('got-scraping');
@@ -7,25 +8,25 @@ const admin = require('firebase-admin');
 const firestore = admin.firestore();
 
 export interface Episode {
-    type:String
-    url:String
-    language:string
+    type: String
+    url: String
+    language: string
     downloable: Boolean
     type_downloable: String
     url_download: String
 }
 
-export async function getSubEpisodes(name:string,episode:number,idAnime: number){
+export async function getSubEpisodes(name: string, episode: number, idAnime: number) {
     let episodes: Episode[] = [];
     const data = await firestore.collection('last_episodes_uploaded').doc(idAnime.toString()).collection('sub_es').doc(episode.toString()).get();
-    if(data.exists){
+    if (data.exists) {
         episodes = data.get('episodes');
-    }else{
-        const urlAFX = generateUrlAFX(name,episode);
-        const urlJK = await generateUrlJK(name,episode);
+    } else {
+        const urlAFX = await generateUrlAFX(name, episode);
+        const urlJK = await generateUrlJK(name, episode);
         episodes = await getSubEpisodeAFX(urlAFX);
         var dataJK = await getSubEpisodeJK(urlJK);
-        for (var val of dataJK){
+        for (var val of dataJK) {
             episodes.push(val);
         }
     }
@@ -33,44 +34,66 @@ export async function getSubEpisodes(name:string,episode:number,idAnime: number)
     return episodes;
 }
 
-function generateUrlAFX(name:string,episode:number){
-    var nameAFX = name.replace('.','').replace(', ','-').replace(': ','-').replace(/\s/g,'-').toLowerCase();
+async function generateUrlAFX(name: string, episode: number) {
+    var nameAFX = name.replace('.', '').replace(', ', '-').replace(': ', '-').replace(/\s/g, '-').toLowerCase();
+    const names = await getDataOnDB('sub_es');
+    names.map(function (i: any, value: any) {
+        if (i.includes(name)) {
+            const values = i.split(',');
+            let newName = '';
+            for (let i = 0; i < values.length; i++) {
+                if (i != values.length - 1) {
+                    if (i == 0) {
+                        newName = values[i];
+                    } else {
+                        newName = newName + ',' + values[i];
+                    }
+                }
+            }
+            console.log(newName);
+            if (newName === name) {
+                if (i.includes(',')) {
+                    nameAFX = values[values.length - 1];
+                }
+            }
+        }
+    });
     const url = 'https://www.animefenix.com/ver/' + nameAFX + '-' + episode;
     console.log(url);
     return url;
 }
 
-async function generateUrlJK(name:string,episode:number){
-    var nameJK = name.replace('.','').replace(', ','-').replace(': ','-').replace(/\s/g,'-').toLowerCase();
+async function generateUrlJK(name: string, episode: number) {
+    var nameJK = name.replace('.', '').replace(', ', '-').replace(': ', '-').replace(/\s/g, '-').toLowerCase();
     const names = await getDataOnDB('sub_es');
-    names.map(function(i:any,value:any){
+    names.map(function (i: any, value: any) {
         if (i.includes(name)) {
             const values = i.split(',');
             let newName = '';
             for (let i = 0; i < values.length; i++) {
-                if(i!=values.length-1){
-                    if(i==0){
+                if (i != values.length - 1) {
+                    if (i == 0) {
                         newName = values[i];
-                    }else{
+                    } else {
                         newName = newName + ',' + values[i];
-                    }                    
+                    }
                 }
-              }
+            }
             console.log(newName);
-            if(newName===name){
+            if (newName === name) {
                 if (i.includes(',')) {
-                    nameJK = values[values.length-1];
-                } 
-            }            
+                    nameJK = values[values.length - 1];
+                }
+            }
         }
     });
     const url = 'https://jkanime.net/' + nameJK + '/' + episode;
-    console.log('nameJK: ',url);
+    console.log('nameJK: ', url);
     return url;
 }
 
-async function getSubEpisodeAFX(url:string) {
-    var episodes : Episode[] = [];
+async function getSubEpisodeAFX(url: string) {
+    var episodes: Episode[] = [];
     try {
         const { data } = await axios.get(url);
         const $ = cheerio.load(data);
@@ -86,9 +109,9 @@ async function getSubEpisodeAFX(url:string) {
             const iframe = cheerio.load(val);
             if (!String(iframe('iframe').attr('src')).includes('um2.php')) {
                 episodes.push({
-                    type:'secondary',
-                    url:iframe('iframe').attr('src'),
-                    language:'sub_es',
+                    type: 'secondary',
+                    url: iframe('iframe').attr('src'),
+                    language: 'sub_es',
                     downloable: false,
                     type_downloable: "NONE",
                     url_download: ''
@@ -128,9 +151,10 @@ async function getSubEpisodeAFLV() {
     }
 }
 
-async function getSubEpisodeJK(url:string) {
+async function getSubEpisodeJK(url: string) {
     var episodes: Episode[] = [];
     try {
+        const baseUrl = 'https://jkanime.net'
         const { data } = await axios.get(url);
         const $ = cheerio.load(data);
         const scripts = $('script');
@@ -141,35 +165,39 @@ async function getSubEpisodeJK(url:string) {
                 var dataT = String($(value).html()).split("] = '");
                 for (var val of dataT) {
                     if (val.includes('iframe')) {
-                        tags.push(val.split("';")[0].trimStart().trimEnd());
+                        tags.push(val.split("';")[0].trim());
                     }
                 }
                 for (var val of tags) {
                     const iframe = cheerio.load(val);
                     if (!String(iframe('iframe').attr('src')).includes('um2.php')) {
-                        video.push(iframe('iframe').attr('src'));
+                        let url = iframe('iframe').attr('src');
+                        if(!String(iframe('iframe').attr('src')).includes('mega.nz')){
+                            url = baseUrl + iframe('iframe').attr('src');
+                        }
+                        video.push(url);
                     }
                 }
             }
         });
-        for (var val of video){
-            if(val.includes('jk.php') || val.includes('um.php')){
+        for (var val of video) {
+            if (val.includes('jk.php') || val.includes('um.php')) {
                 const dataU = String(await getDirectLink(val));
-                if(dataU != ""){
+                if (dataU != "") {
                     episodes.push({
-                        type:'primary',
+                        type: 'primary',
                         url: dataU,
-                        language:'sub_es',
+                        language: 'sub_es',
                         downloable: false,
                         type_downloable: "NONE",
                         url_download: ''
                     });
-                }                
-            }else{
+                }
+            } else {
                 episodes.push({
-                    type:'secondary',
+                    type: 'secondary',
                     url: val,
-                    language:'sub_es',
+                    language: 'sub_es',
                     downloable: false,
                     type_downloable: "NONE",
                     url_download: ''
@@ -184,15 +212,15 @@ async function getSubEpisodeJK(url:string) {
     }
 }
 
-async function getDirectLink(url:String) {
-    var urlDirect :String = "";
+async function getDirectLink(url: String) {
+    var urlDirect: String = "";
     try {
         const { data } = await axios.get(url);
         const $ = cheerio.load(data)
-        if(url.includes('um.php')){
+        if (url.includes('um.php')) {
             const scripts = $('script');
-            scripts.map(function(i:any,value:any){
-                if(String($(value).html()).includes('var parts = {')){
+            scripts.map(function (i: any, value: any) {
+                if (String($(value).html()).includes('var parts = {')) {
                     urlDirect = String($(value).html()).split("swarmId: '")[1].split("',")[0];
                 }
             });

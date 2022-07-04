@@ -3,6 +3,7 @@ type Query {
     getAnimesFav(id: String): [Anime]
     getRoles: [Rol]
     getReviewsByUser(id: String): [Review]
+    getTypesImages: [TypeImage]
 }
 
 type Mutation {
@@ -60,4 +61,11 @@ type Rol {
     description: String
     color: String
     selectable: Boolean
+}
+
+type TypeImage {
+    id: String
+    description: String
+    url_img: String
+    images: [String]
 }
