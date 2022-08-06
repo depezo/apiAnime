@@ -16,6 +16,7 @@ import newsResolver from "./resolvers/news_resolver";
 import migrateResolver from "./resolvers/migrate_resolver";
 import userResolver from "./resolvers/user_resolver";
 import chatResolver from "./resolvers/chat_resolver";
+import wallpaperResolver from "./resolvers/wallpaper_resolver";
 
 //Schemas
 import anime from "./schemas/anime.graphql";
@@ -33,6 +34,7 @@ import news from "./schemas/news.graphql";
 import migrate from "./schemas/migrate.graphql";
 import user from "./schemas/user.graphql";
 import chat from "./schemas/chat.graphql"
+import wallpaper from "./schemas/wallpaper.graphql"
 
 export const schema: GraphQLSchema = mergeSchemas({
     typeDefs: [
@@ -49,7 +51,8 @@ export const schema: GraphQLSchema = mergeSchemas({
         news,
         migrate,
         user,
-        chat
+        chat,
+        wallpaper
     ],
     resolvers: [
         animeResolver,
@@ -65,6 +68,7 @@ export const schema: GraphQLSchema = mergeSchemas({
         newsResolver,
         migrateResolver,
         userResolver,
-        chatResolver
+        chatResolver,
+        wallpaperResolver
     ]
 });

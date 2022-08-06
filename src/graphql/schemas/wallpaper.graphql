@@ -1,0 +1,66 @@
+type Query {
+    getTagsByString(input: String): [Tag]
+    getTopWeekWallpapers: [Wallpaper]
+    getSectionsWallpaperHome: [Section]
+    getSectionWallpaper(query: String,userId: String): [Wallpaper]
+    #getSectionCollection(query: Strubg): [Collection]
+}
+
+type Section {
+    description: String
+    position: Int
+    type: String
+    query: String
+}
+type Mutation {
+    addNewWallpaper(wallpaper: WallpaperInput): String
+}
+
+type Wallpaper {
+    id: String
+    title: String
+    url_img: String
+    url_storage: String
+    likes: [String]
+    dislikes: [String]
+    tags: [Tag]
+    user: String,
+    by_search_count: Int
+    by_downloads_count: Int
+    collections: [String]
+    width: Int
+    height: Int
+    typeResolution: TypeResolution
+    status: String
+}
+
+input WallpaperInput {
+    title: String
+    url_img: String
+    url_storage: String
+    tags: [TagInput]
+    user: String,
+    width: Int
+    height: Int
+    typeResolution: TypeResolution
+    status: String
+}
+
+enum TypeResolution {
+    HD,
+    FHD,
+    QHD,
+    UHD
+}
+
+input TagInput {
+    id: String
+    description: String
+}
+
+type Tag {
+    id: String
+    description: String
+    by_search_count: Int
+    wallpapers_count: Int
+}

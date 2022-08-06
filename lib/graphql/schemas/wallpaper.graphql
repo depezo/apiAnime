@@ -1,0 +1,10 @@
+type Query {
+    getTagsByString(input: String): [Tag]
+}
+
+type Tag {
+    id: String
+    description: String
+    by_search_count: Int
+    wallpapers_count: Int
+}

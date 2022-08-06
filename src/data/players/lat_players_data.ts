@@ -230,7 +230,7 @@ async function getLatEpisodesAHD(url: string) {
         const $ = cheerio.load(data);
         const dataJson = JSON.parse($('#__NEXT_DATA__').html());
         for (var val of dataJson.props.pageProps.data.players[1]) {
-            if (val.languaje == '1') {
+            if (val.languaje == '1' && !String(val.code).includes('fembed.com')) {
                 let type_downloable = "NONE";
                 let downloable = false;
                 if (String(val.code).endsWith('.mp4')) {
