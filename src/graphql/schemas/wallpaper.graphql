@@ -3,7 +3,49 @@ type Query {
     getTopWeekWallpapers: [Wallpaper]
     getSectionsWallpaperHome: [Section]
     getSectionWallpaper(query: String,userId: String): [Wallpaper]
-    #getSectionCollection(query: Strubg): [Collection]
+    getSectionCollection(query: String, userId: String): [Collection]
+    getUserAndSections(userId:String, tags: [String]): UserAndSections
+    getWallpapersOfCollection(wallpaperIds: [String]): [Wallpaper]
+    getTopTags: [Tag]
+    getMostSearchedWallpapers: [Wallpaper]
+    getWallpaperByInput(input: String): [Wallpaper]
+    getForCheckWallpapers: [Wallpaper]
+}
+
+type UserAndSections {
+    user: UserFull
+    sections: [Section]
+}
+
+type Mutation {
+    addNewWallpaper(wallpaper: WallpaperInput): String
+    publishCollection(collection: CollectionInput): String
+    setLikeOrDislikeWallpaper(docId: String, userId: String, type: String, isRemoving: Boolean, reference: String): String
+    incrementDownloadCount(wallpaperId: String): String
+    approveWallpaper(idWallpaper: String, status: String, tags: [String]): String
+}
+
+type Collection {
+    id: String
+    title: String
+    likes: [String]
+    dislikes: [String]
+    banner_wallpapers: [Wallpaper]
+    wallpapers: [String]
+    wallpapers_count: Int
+    by_downloads_count: Int
+    by_search_count: Int
+    tags: [String]
+    user: String
+}
+
+input CollectionInput {
+    title: String
+    banner_wallpapers: [WallpaperInput]
+    wallpapers: [String]
+    wallpapers_count: Int
+    tags: [String]
+    user: String
 }
 
 type Section {
@@ -11,9 +53,6 @@ type Section {
     position: Int
     type: String
     query: String
-}
-type Mutation {
-    addNewWallpaper(wallpaper: WallpaperInput): String
 }
 
 type Wallpaper {
@@ -23,7 +62,7 @@ type Wallpaper {
     url_storage: String
     likes: [String]
     dislikes: [String]
-    tags: [Tag]
+    tags: [String]
     user: String,
     by_search_count: Int
     by_downloads_count: Int
@@ -38,7 +77,7 @@ input WallpaperInput {
     title: String
     url_img: String
     url_storage: String
-    tags: [TagInput]
+    tags: [String]
     user: String,
     width: Int
     height: Int

@@ -5,6 +5,7 @@ const serviceAccount = require('../../animeapp-a8b2c-firebase-adminsdk-qul5q-c25
 const admin = require('firebase-admin');
 const { gotScraping } = require('got-scraping');
 const puppeteer = require('puppeteer');
+const FieldValue = admin.firestore.FieldValue;
 
 admin.initializeApp({
     credential: admin.credential.cert(serviceAccount),
@@ -13,7 +14,7 @@ admin.initializeApp({
 });
 const firestore = admin.firestore();
 
-export async function getLatEpisodes(name: string, episode: number, idAnime: number) {
+export async function getLatEpisodes(name: string, episode: number, idAnime: number, isDebug: Boolean) {
     var episodes: Episode[] = [];
     try {
         const data = await firestore.collection('last_episodes_uploaded').doc(idAnime.toString()).collection('dub_es').doc(episode.toString()).get();
@@ -56,6 +57,11 @@ export async function getLatEpisodes(name: string, episode: number, idAnime: num
                 episodes = await getLatEpisodesHEJ(urlHEJ);
             }
         }
+        if(episodes.length > 0 && isDebug == undefined){
+            await firestore.collection('anime').doc(idAnime.toString()).collection('episodes').doc(episode.toString()).set({
+                count_viewed_lat: FieldValue.increment(1)
+            }, {merge: true});
+        }
         return episodes;
     } catch (error) {
         console.log(error)
@@ -87,7 +93,7 @@ export async function getPrimaryAndDownload(episodes: Episode[]) {
                         url: mfUrl,
                         url_download: mfUrl,
                         type: 'primary',
-                        type_downloable: 'WEB',
+                        type_downloable: 'DIRECT',
                         downloable: true,
                         language: 'dub_es'
                     }

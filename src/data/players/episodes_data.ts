@@ -1,4 +1,4 @@
-import { TinyAnime, TinyAnimeLA } from "../anime/anime_data";
+import { Anime, TinyAnime, TinyAnimeLA } from "../anime/anime_data";
 import { getPrimaryAndDownload } from "./lat_players_data";
 import { Episode } from "./sub_players_data";
 
@@ -15,13 +15,126 @@ interface LastEpisodeUploaded {
     episodes: Episode[]
 }
 
-export async function getLastEpisodeUploaded(idAnime: number){
+export async function getWeekdayEmisionDub(weekday: String){
+    console.log(weekday);
+    const animes: Anime[] =[];
+    try {
+        const snapshot = await firestore.collection('anime').where('status_dub','==','in_emission').where('day_broadcast_lat','==',weekday).get();
+        snapshot.forEach((doc: any) => {
+            const anime = doc.data();
+            if (doc.data().title == undefined){
+                anime.title = "Sin titulo";
+            }
+            animes.push(anime);
+        })
+    } catch (error) {
+        console.log(error);
+    }
+    return animes;
+}
+
+export async function getAllEmisionDub(){
+    const animes: Anime[] =[];
+    try {
+        const snapshot = await firestore.collection('anime').where('status_dub','==','in_emission').get();
+        snapshot.forEach((doc: any) => {
+            const anime = doc.data();
+            if (doc.data().title == undefined){
+                anime.title = "Sin titulo";
+            }
+            animes.push(anime);
+        })
+    } catch (error) {
+        console.log(error);
+    }
+    return animes;
+}
+
+export async function updateStatusEpisode(idAnime: number, status: String, language: String){
+    let statusF = '';
+    try {
+        if(language == 'dub_es'){
+            await firestore.collection('anime').doc(idAnime.toString()).set({
+                status_dub: status == 'null' ? null : status,
+                id: idAnime
+            }, {merge: true});
+        }else{
+            await firestore.collection('anime').doc(idAnime.toString()).set({
+                status_sub: status == 'null' ? null : status,
+                id: idAnime
+            }, {merge: true});
+        }       
+        status = 'OK'; 
+    } catch (error) {
+        console.log(error);
+    }
+    return statusF;
+}
+
+export async function updateHourEpisode(idAnime: number, hour: number, minute: number, language: String){
+    let status = '';
+    try {
+        const time = new Date();
+        time.setHours(hour+5);
+        time.setMinutes(minute);
+        console.log(time.toISOString());
+        if(language == 'dub_es'){
+            await firestore.collection('anime').doc(idAnime.toString()).set({
+                hour_broadcast_lat: time.toISOString(),
+                id: idAnime
+            }, {merge: true});
+        }else{
+            await firestore.collection('anime').doc(idAnime.toString()).set({
+                hour_broadcast_sub: time.toISOString(),
+                id: idAnime
+            }, {merge: true});
+        }       
+        status = 'OK'; 
+    } catch (error) {
+        console.log(error);
+    }
+    return status;
+}
+
+export async function updateWeekdayEpisode(idAnime: number, weekday: String, language: String){
+    let status = '';
+    try {
+        if(language == 'dub_es'){
+            await firestore.collection('anime').doc(idAnime.toString()).set({
+                day_broadcast_lat: weekday == 'null' ? null : weekday,
+                id: idAnime
+            }, {merge: true});
+        }else {
+            await firestore.collection('anime').doc(idAnime.toString()).set({
+                day_broadcast_sub: weekday == 'null' ? null : weekday,
+                id: idAnime
+            }, {merge: true});
+        }        
+        status = 'OK';
+    } catch (error) {
+        console.log(error);
+    }
+    return status
+};
+
+export async function getLastEpisodeUploaded(idAnime: number, isDebug: Boolean){
     let episodes: Episode[] = [];
     try {
         const data = await firestore.collection('last_episodes_uploaded').doc(idAnime.toString()).get();
         if (data.exists) {
             episodes = data.get('episodes');
             episodes = await getPrimaryAndDownload(episodes);
+            if(episodes.length > 0 && isDebug == undefined){
+                if(episodes[0].language == "dub_es"){
+                    await firestore.collection('anime').doc(idAnime.toString()).collection('episodes').doc(data.get('episode').toString()).set({
+                        count_viewed_lat: FieldValue.increment(1)
+                    }, {merge: true});
+                }else{
+                    await firestore.collection('anime').doc(idAnime.toString()).collection('episodes').doc(data.get('episode').toString()).set({
+                        count_viewed_sub: FieldValue.increment(1)
+                    }, {merge: true});
+                }
+            }
         }
     } catch (error) {
         console.log(error);

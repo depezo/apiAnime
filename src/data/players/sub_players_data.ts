@@ -6,6 +6,7 @@ const axios = require('axios').default;
 const { gotScraping } = require('got-scraping');
 const admin = require('firebase-admin');
 const firestore = admin.firestore();
+const FieldValue = admin.firestore.FieldValue;
 
 export interface Episode {
     type: String
@@ -16,7 +17,7 @@ export interface Episode {
     url_download: String
 }
 
-export async function getSubEpisodes(name: string, episode: number, idAnime: number) {
+export async function getSubEpisodes(name: string, episode: number, idAnime: number, isDebug: Boolean) {
     let episodes: Episode[] = [];
     const data = await firestore.collection('last_episodes_uploaded').doc(idAnime.toString()).collection('sub_es').doc(episode.toString()).get();
     if (data.exists) {
@@ -28,6 +29,11 @@ export async function getSubEpisodes(name: string, episode: number, idAnime: num
         var dataJK = await getSubEpisodeJK(urlJK);
         for (var val of dataJK) {
             episodes.push(val);
+        }
+        if(episodes.length > 0 && isDebug == undefined){
+            await firestore.collection('anime').doc(idAnime.toString()).collection('episodes').doc(episode.toString()).set({
+                count_viewed_sub: FieldValue.increment(1)
+            }, {merge: true});
         }
     }
     //console.log(episodes);
@@ -194,14 +200,16 @@ async function getSubEpisodeJK(url: string) {
                     });
                 }
             } else {
-                episodes.push({
-                    type: 'secondary',
-                    url: val,
-                    language: 'sub_es',
-                    downloable: false,
-                    type_downloable: "NONE",
-                    url_download: ''
-                });
+                if(!val.includes('jkfembed.php')){
+                    episodes.push({
+                        type: 'secondary',
+                        url: val,
+                        language: 'sub_es',
+                        downloable: false,
+                        type_downloable: "NONE",
+                        url_download: ''
+                    });
+                }
             }
         }
         return episodes;

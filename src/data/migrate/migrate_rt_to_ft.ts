@@ -1,6 +1,6 @@
 import { DataSnapshot } from "firebase-functions/v1/database";
 import { DocumentSnapshot } from "firebase-functions/v1/firestore";
-import { Review } from "../anime/anime_data";
+import { Anime, getAnimeData, Review } from "../anime/anime_data";
 
 const admin = require('firebase-admin');
 const serviceAccount = require('../../animeapp-a8b2c-firebase-adminsdk-qul5q-c256baff7f.json');
@@ -17,15 +17,48 @@ const FieldValue = admin.firestore.FieldValue;
 
 export async function migrateTest() {
     var migrate = "";
-    /*await firestore.collection('reviews').get().then((snapshot: any) => {
+    /*await realtime.ref('animes_spanish').get().then(async (snapshot: any) => {
+        const animes: Anime[] = [];
+        if(snapshot.exists()){
+            snapshot.forEach((value:any) => {
+                console.log('migrating ==> ', value.val().id);
+                animes.push(value.val());
+                //const anime = await getAnimeData(value.val().id,false);
+                //console.log(anime);
+                await firestore.collection('anime').set({
+                    id: parseInt(value.val().id),
+                    title: value.val().title,
+
+                })
+            });
+            migrate = "migrated";
+        }else{
+            migrate = "no data to migrate";
+            console.log("No data.");
+        }
+        await Promise.all(animes.map(async (value: Anime,index: any) => {
+            console.log(value,index);
+            await firestore.collection('anime').doc(value.id.toString()).set({
+                id: value.id,
+                dub_spa_enable: true,
+                title: value.title,
+                url_img: value.url_img
+            });
+        }));
+        console.log(animes);
+    }).catch((error:any) => {
+        migrate = "fail migrated";
+        console.log(error);
+    });*/
+    /*await firestore.collection('extra_features').doc('wallpapers_base').collection('wallpapers').get().then((snapshot: any) => {
         snapshot.forEach(async (value: any) => {
             let data = {} as Review
             data = value.data()
             console.log(value.id)
             let val = 0
             if(data.likes != null) val = data.likes.length
-            await firestore.collection('reviews').doc(value.id).update({
-                count_likes: val
+            await firestore.collection('extra_features').doc('wallpapers_base').collection('wallpapers').doc(value.id).update({
+                status: 'pending'
             })
         })
         migrate = 'OKMIGRATED'

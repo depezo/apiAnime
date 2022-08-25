@@ -1,4 +1,5 @@
 import { DocumentSnapshot } from "firebase-functions/v1/firestore";
+import { getUser, getUserData, UserData } from "../user/user_data";
 import { Tag } from "./tag";
 
 const admin = require('firebase-admin');
@@ -6,14 +7,14 @@ const firestore = admin.firestore();
 const wallpaperReference = firestore.collection('extra_features').doc('wallpapers_base');
 const FieldValue = admin.firestore.FieldValue;
 
-interface Wallpaper {
+export interface Wallpaper {
     id: String,
     title: String,
     url_img: String,
     url_storage: String,
     likes: String[],
     dislikes: String[],
-    tags: Tag[],
+    tags: String[],
     user: String,
     by_search_count: number,
     by_downloads_count: number,
@@ -38,12 +39,158 @@ interface Section {
     query: String
 }
 
-export async function getSectionWallpaper(query: String, userId: String){
-    if(userId != 'null'){
+export async function approveWallpaper(idWallpaper: String,status: String, tags: String[]){
+    let statusF = 'FAIL';
+    try {
+        if(status == 'approved'){
+            for (let i = 0; i < tags.length; i++) {
+                const tagName = tags[i].toLowerCase().trim();
+                await wallpaperReference.collection('tags').doc(tagName).set({
+                    wallpaper_count: FieldValue.increment(1),
+                    description: tagName,
+                    id: tagName
+                }, { merge: true })
+            }
+        }
+        await wallpaperReference.collection('wallpapers').doc(idWallpaper).update({
+            status: status,
+            updated_status_datetime: FieldValue.serverTimestamp()
+        });
+    } catch (error) {
+        console.log(error);
+    }
+    return statusF;
+}
+
+export async function getForCheckWallpapers(){
+    const wallpapers: Wallpaper[] = [];
+    try {
+        const snapshot = await wallpaperReference.collection('wallpapers').where('status', '==','pending' ).limit(10).get();
+        snapshot.forEach((doc: any) => {
+            wallpapers.push(doc.data());
+        });
+    } catch (error) {
+        console.log(error);
+    }
+    return wallpapers;
+}
+
+export async function getWallpaperByInput(input: String) {
+    const wallpapers: Wallpaper[] = [];
+    try {
+        const snapshotTag = await wallpaperReference.collection('wallpapers')
+            .where('tags', 'array-contains', input.toLowerCase()).where('status', '==', 'approved').limit(10).get();
+        snapshotTag.forEach((doc: any) => {
+            let isAdded = false;
+            for (let item of wallpapers){
+                if(item.id == doc.data().id){
+                    isAdded = true;
+                }
+            }
+            if (!isAdded){
+                console.log('tag: '+doc.data().id, isAdded)
+                wallpapers.push(doc.data());
+            }
+        });
+        const snapshot = await wallpaperReference.collection('wallpapers').where('status', '==', 'approved').where('title', '>=', input).limit(10).get();
+        snapshot.forEach((doc: any) => {
+            let isAdded = false;
+            for (let item of wallpapers){
+                if(item.id == doc.data().id){
+                    isAdded = true;
+                }
+            }
+            if (!isAdded){
+                console.log('none: '+doc.data().id, isAdded)
+                wallpapers.push(doc.data());
+            }
+        });
+    } catch (error) {
+        console.log(error);
+    }
+    return wallpapers;
+}
+
+export async function getMostSearchedWallpapers() {
+    const wallpapers: Wallpaper[] = [];
+    try {
+        const snapshot = await wallpaperReference.collection('wallpapers').where('status', '==', 'approved').orderBy('by_search_count', 'desc').limit(10).get();
+        snapshot.forEach((doc: any) => {
+            wallpapers.push(doc.data());
+        })
+    } catch (error) {
+        console.log(error);
+    }
+    return wallpapers;
+}
+
+export async function incrementDownloadCount(wallpaperId: String) {
+    let status = 'FAIL';
+    try {
+        await wallpaperReference.collection('wallpapers').doc(wallpaperId).update({
+            by_downloads_count: FieldValue.increment(1)
+        });
+    } catch (error) {
+        console.log(error);
+    }
+    return status;
+}
+
+export async function setLikeOrDislikeWallpaper(docId: String, userId: String, type: String, isRemoving: boolean, reference: String) {
+    let status = 'FAIL';
+    try {
+        const update = wallpaperReference.collection(reference).doc(docId);
+        if (type == 'like') {
+            if (isRemoving) {
+                await update.update({
+                    likes: FieldValue.arrayRemove(userId)
+                });
+            } else {
+                await update.update({
+                    likes: FieldValue.arrayUnion(userId),
+                    dislikes: FieldValue.arrayRemove(userId)
+                });
+            }
+        } else {
+            if (isRemoving) {
+                await update.update({
+                    dislikes: FieldValue.arrayRemove(userId)
+                });
+            } else {
+                await update.update({
+                    dislikes: FieldValue.arrayUnion(userId),
+                    likes: FieldValue.arrayRemove(userId)
+                });
+            }
+        }
+        status = 'OK'
+    } catch (error) {
+        console.log(error);
+    }
+    return status;
+}
+
+export async function getUserAndSections(userId: String, tags: String[]) {
+    let response = {};
+    try {
+        const user = await getUser(userId);
+        const sections: Section[] = await getSectionsWallpaperHome();
+        response = {
+            user: user,
+            sections: sections
+        }
+    } catch (error) {
+        console.log(error);
+    }
+    return response;
+}
+
+export async function getSectionWallpaper(query: String, userId: String) {
+    if (userId != 'null') {
         console.log(userId)
     }
     let items: Wallpaper[] = [];
-    switch (query){
+    switch (query) {
         case "getMostPopularTag":
             await getMostPopularTag().then((values: Wallpaper[]) => {
                 items = values;
@@ -53,11 +200,11 @@ export async function getSectionWallpaper(query: String, userId: String){
     return items
 }
 
-async function getMostPopularTag(){
+async function getMostPopularTag() {
     const wallpaper: Wallpaper[] = [];
     try {
-        const snapshotWalls = await wallpaperReference.collection('wallpapers').limit(10).get();
-        snapshotWalls.forEach((doc:any) => {
+        const snapshotWalls = await wallpaperReference.collection('wallpapers').where('status', '==', 'approved').limit(10).get();
+        snapshotWalls.forEach((doc: any) => {
             wallpaper.push(doc.data());
         })
     } catch (error) {
@@ -66,10 +213,10 @@ async function getMostPopularTag(){
     return wallpaper;
 }
 
-export async function getSectionsWallpaperHome(){
+export async function getSectionsWallpaperHome() {
     const sections: Section[] = [];
     try {
-        const snapshot = await wallpaperReference.collection('sections').get();
+        const snapshot = await wallpaperReference.collection('sections').orderBy('position', 'asc').get();
         snapshot.forEach((doc: any) => {
             sections.push(doc.data());
         });
@@ -82,7 +229,7 @@ export async function getSectionsWallpaperHome(){
 export async function getTopWeekWallpapers() {
     const wallpapers: Wallpaper[] = [];
     try {
-        const snapshot = await wallpaperReference.collection('wallpapers').where('status', '==', 'approved').orderBy('by_search_count','desc').limit(10).get();
+        const snapshot = await wallpaperReference.collection('wallpapers').where('status', '==', 'approved').orderBy('by_search_count', 'desc').limit(10).get();
         snapshot.forEach((doc: any) => {
             wallpapers.push(doc.data());
         });
@@ -96,18 +243,9 @@ export async function addNewWallpaper(wallpaper: Wallpaper) {
     let status = 'FAIL';
     try {
         const document = wallpaperReference.collection('wallpapers').doc();
-        for (let i = 0; i < wallpaper.tags.length; i++) {
-            const tagName = wallpaper.tags[i].description.toLowerCase();
-            wallpaper.tags[i].description = tagName;
-            await wallpaperReference.collection('tags').doc(tagName).set({
-                wallpaper_count: FieldValue.increment(1),
-                description: tagName,
-                id: tagName
-            }, { merge: true })
-        }
         await wallpaperReference.collection('wallpapers').doc(document.id).set({
             id: document.id,
-            title: wallpaper.title,
+            title: wallpaper.title.toLowerCase(),
             url_img: wallpaper.url_img,
             url_storage: wallpaper.url_storage,
             tags: wallpaper.tags,

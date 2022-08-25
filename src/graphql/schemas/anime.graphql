@@ -55,6 +55,12 @@ type Anime {
     recommendations: [Recommendation]
     aired: Aired
     dub_spa_enable: Boolean
+    day_broadcast_lat: String
+    hour_broadcast_lat: String
+    status_dub: String
+    day_broadcast_sub: String
+    hour_broadcast_sub: String
+    status_sub: String
 }
 
 type Aired {
