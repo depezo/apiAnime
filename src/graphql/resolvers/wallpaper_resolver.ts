@@ -1,4 +1,4 @@
-import { getSectionCollection, getWallpapersOfCollection, publishCollection } from "../../data/wallpaper/collection";
+import { getCollectionsByInput, getSectionCollection, getWallpapersOfCollection, publishCollection } from "../../data/wallpaper/collection";
 import { getTagsByString, getTopTags } from "../../data/wallpaper/tag";
 import { addNewWallpaper, getSectionWallpaper, getSectionsWallpaperHome, getTopWeekWallpapers, getUserAndSections, setLikeOrDislikeWallpaper, incrementDownloadCount, getMostSearchedWallpapers, getWallpaperByInput, getForCheckWallpapers, approveWallpaper } from "../../data/wallpaper/wallpaper";
 
@@ -20,7 +20,7 @@ const wallpaperResolver = {
             return getSectionCollection(args.query, args.userId);
         },
         getUserAndSections(root: void, args: any){
-            return getUserAndSections(args.userId,args.tags);
+            return getUserAndSections(args.userId,args.tags,args.isComingFrom);
         },
         getWallpapersOfCollection(root: void, args: any){
             return getWallpapersOfCollection(args.wallpaperIds)
@@ -36,6 +36,9 @@ const wallpaperResolver = {
         },
         getForCheckWallpapers(root: void, args: any){
             return getForCheckWallpapers();
+        },
+        getCollectionsByInput(root: void, args: any){
+            return getCollectionsByInput(args.input);
         }
     },
     Mutation: {

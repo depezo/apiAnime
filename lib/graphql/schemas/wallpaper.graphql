@@ -4,7 +4,13 @@ type Query {
     getSectionsWallpaperHome: [Section]
     getSectionWallpaper(query: String,userId: String): [Wallpaper]
     getSectionCollection(query: String, userId: String): [Collection]
-    getUserAndSections(userId:String, tags: [TagInput]): UserAndSections
+    getUserAndSections(userId:String, tags: [String], isComingFrom: String): UserAndSections
+    getWallpapersOfCollection(wallpaperIds: [String]): [Wallpaper]
+    getTopTags: [Tag]
+    getMostSearchedWallpapers: [Wallpaper]
+    getWallpaperByInput(input: String): [Wallpaper]
+    getForCheckWallpapers: [Wallpaper]
+    getCollectionsByInput(input: String): [Collection]
 }
 
 type UserAndSections {
@@ -17,6 +23,7 @@ type Mutation {
     publishCollection(collection: CollectionInput): String
     setLikeOrDislikeWallpaper(docId: String, userId: String, type: String, isRemoving: Boolean, reference: String): String
     incrementDownloadCount(wallpaperId: String): String
+    approveWallpaper(idWallpaper: String, status: String, tags: [String]): String
 }
 
 type Collection {
@@ -29,7 +36,7 @@ type Collection {
     wallpapers_count: Int
     by_downloads_count: Int
     by_search_count: Int
-    tags: [Tag]
+    tags: [String]
     user: String
 }
 
@@ -37,8 +44,8 @@ input CollectionInput {
     title: String
     banner_wallpapers: [WallpaperInput]
     wallpapers: [String]
-    wallapapers_count: Int
-    tags: [TagInput]
+    wallpapers_count: Int
+    tags: [String]
     user: String
 }
 
@@ -56,7 +63,7 @@ type Wallpaper {
     url_storage: String
     likes: [String]
     dislikes: [String]
-    tags: [Tag]
+    tags: [String]
     user: String,
     by_search_count: Int
     by_downloads_count: Int
@@ -71,7 +78,7 @@ input WallpaperInput {
     title: String
     url_img: String
     url_storage: String
-    tags: [TagInput]
+    tags: [String]
     user: String,
     width: Int
     height: Int

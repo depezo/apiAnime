@@ -4,12 +4,13 @@ type Query {
     getSectionsWallpaperHome: [Section]
     getSectionWallpaper(query: String,userId: String): [Wallpaper]
     getSectionCollection(query: String, userId: String): [Collection]
-    getUserAndSections(userId:String, tags: [String]): UserAndSections
+    getUserAndSections(userId:String, tags: [String], isComingFrom: String): UserAndSections
     getWallpapersOfCollection(wallpaperIds: [String]): [Wallpaper]
     getTopTags: [Tag]
     getMostSearchedWallpapers: [Wallpaper]
     getWallpaperByInput(input: String): [Wallpaper]
     getForCheckWallpapers: [Wallpaper]
+    getCollectionsByInput(input: String): [Collection]
 }
 
 type UserAndSections {

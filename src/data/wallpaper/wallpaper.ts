@@ -39,10 +39,10 @@ interface Section {
     query: String
 }
 
-export async function approveWallpaper(idWallpaper: String,status: String, tags: String[]){
+export async function approveWallpaper(idWallpaper: String, status: String, tags: String[]) {
     let statusF = 'FAIL';
     try {
-        if(status == 'approved'){
+        if (status == 'approved') {
             for (let i = 0; i < tags.length; i++) {
                 const tagName = tags[i].toLowerCase().trim();
                 await wallpaperReference.collection('tags').doc(tagName).set({
@@ -62,10 +62,10 @@ export async function approveWallpaper(idWallpaper: String,status: String, tags:
     return statusF;
 }
 
-export async function getForCheckWallpapers(){
+export async function getForCheckWallpapers() {
     const wallpapers: Wallpaper[] = [];
     try {
-        const snapshot = await wallpaperReference.collection('wallpapers').where('status', '==','pending' ).limit(10).get();
+        const snapshot = await wallpaperReference.collection('wallpapers').where('status', '==', 'pending').limit(10).get();
         snapshot.forEach((doc: any) => {
             wallpapers.push(doc.data());
         });
@@ -82,26 +82,24 @@ export async function getWallpaperByInput(input: String) {
             .where('tags', 'array-contains', input.toLowerCase()).where('status', '==', 'approved').limit(10).get();
         snapshotTag.forEach((doc: any) => {
             let isAdded = false;
-            for (let item of wallpapers){
-                if(item.id == doc.data().id){
+            for (let item of wallpapers) {
+                if (item.id == doc.data().id) {
                     isAdded = true;
                 }
             }
-            if (!isAdded){
-                console.log('tag: '+doc.data().id, isAdded)
+            if (!isAdded) {
                 wallpapers.push(doc.data());
             }
         });
         const snapshot = await wallpaperReference.collection('wallpapers').where('status', '==', 'approved').where('title', '>=', input).limit(10).get();
         snapshot.forEach((doc: any) => {
             let isAdded = false;
-            for (let item of wallpapers){
-                if(item.id == doc.data().id){
+            for (let item of wallpapers) {
+                if (item.id == doc.data().id) {
                     isAdded = true;
                 }
             }
-            if (!isAdded){
-                console.log('none: '+doc.data().id, isAdded)
+            if (!isAdded) {
                 wallpapers.push(doc.data());
             }
         });
@@ -143,23 +141,27 @@ export async function setLikeOrDislikeWallpaper(docId: String, userId: String, t
         if (type == 'like') {
             if (isRemoving) {
                 await update.update({
-                    likes: FieldValue.arrayRemove(userId)
+                    likes: FieldValue.arrayRemove(userId),
+                    rating: FieldValue.increment(-1)
                 });
             } else {
                 await update.update({
                     likes: FieldValue.arrayUnion(userId),
-                    dislikes: FieldValue.arrayRemove(userId)
+                    dislikes: FieldValue.arrayRemove(userId),
+                    rating: FieldValue.increment(2)
                 });
             }
         } else {
             if (isRemoving) {
                 await update.update({
-                    dislikes: FieldValue.arrayRemove(userId)
+                    dislikes: FieldValue.arrayRemove(userId),
+                    rating: FieldValue.increment(1)
                 });
             } else {
                 await update.update({
                     dislikes: FieldValue.arrayUnion(userId),
-                    likes: FieldValue.arrayRemove(userId)
+                    likes: FieldValue.arrayRemove(userId),
+                    rating: FieldValue.increment(-2)
                 });
             }
         }
@@ -170,11 +172,54 @@ export async function setLikeOrDislikeWallpaper(docId: String, userId: String, t
     return status;
 }
 
-export async function getUserAndSections(userId: String, tags: String[]) {
+export async function getUserAndSections(userId: String, tags: String[], isComingFrom: String) {
     let response = {};
     try {
+        const sections: Section[] = [];
         const user = await getUser(userId);
-        const sections: Section[] = await getSectionsWallpaperHome();
+        let position = 0;
+        for (let item of tags) {
+            position++;
+            let query = '';
+            let type = '';
+            if(isComingFrom == 'wallpaper'){
+                query = "{\n" +
+                "  getSectionWallpaper(query: \"getWallpapersByTag#"+ item +"\") {\n" +
+                "    id\n" +
+                "    title\n" +
+                "    url_img\n" +
+                "    url_storage\n" +
+                "    likes\n" +
+                "    dislikes\n" +
+                "    tags \n" +
+                "  }\n" +
+                "}";
+                type = 'wallpapers';
+            }else{
+                query = "{\n" +
+                "  getSectionCollection(query: \"getCollectionsByTag#"+ item +"\") {\n" +
+                "    id\n" +
+                "    by_search_count\n" +
+                "    by_downloads_count\n" +
+                "    banner_wallpapers {\n" +
+                "       url_img\n" +
+                "    }\n" +
+                "    title \n" +
+                "    wallpapers \n" +
+                "    tags \n" +
+                "    user \n" +
+                "  }\n" +
+                "}";
+                type = 'collections';
+            }
+            sections.push({
+                description: 'Mas sobre ' + item.toUpperCase(),
+                position: position,
+                query: query,
+                type: type
+            });
+        }
+        //const sections: Section[] = await getSectionsWallpaperHome();
         response = {
             user: user,
             sections: sections
@@ -185,19 +230,57 @@ export async function getUserAndSections(userId: String, tags: String[]) {
     return response;
 }
 
+async function getWallpapersByTag(tag: String) {
+    const wallpapers: Wallpaper[] = [];
+    try {
+        const snapshot = await wallpaperReference.collection('wallpapers').where('tags', 'array-contains', tag).limit(5).get();
+        snapshot.forEach((doc: any) => {
+            wallpapers.push(doc.data());
+        });
+    } catch (error) {
+        console.log(error);
+    }
+    return wallpapers;
+}
+
 export async function getSectionWallpaper(query: String, userId: String) {
     if (userId != 'null') {
         console.log(userId)
     }
     let items: Wallpaper[] = [];
-    switch (query) {
+    const params = query.split('#');
+    const finishQuery = params[0];
+    switch (finishQuery) {
         case "getMostPopularTag":
             await getMostPopularTag().then((values: Wallpaper[]) => {
                 items = values;
             });
             break;
+        case "getRecentlyAdded":
+            await getRecentlyAdded().then((values: Wallpaper[]) => {
+                items = values;
+            });
+            break;
+        case "getWallpapersByTag":
+            await getWallpapersByTag(params[1]).then((values: Wallpaper[]) => {
+                items = values;
+            });
+            break;
     }
     return items
+}
+
+async function getRecentlyAdded() {
+    const wallpaper: Wallpaper[] = [];
+    try {
+        const snapshotWalls = await wallpaperReference.collection('wallpapers').orderBy('updated_status_datetime', 'desc').limit(10).get();
+        snapshotWalls.forEach((doc: any) => {
+            wallpaper.push(doc.data());
+        })
+    } catch (error) {
+        console.log(error);
+    }
+    return wallpaper;
 }
 
 async function getMostPopularTag() {
@@ -229,7 +312,7 @@ export async function getSectionsWallpaperHome() {
 export async function getTopWeekWallpapers() {
     const wallpapers: Wallpaper[] = [];
     try {
-        const snapshot = await wallpaperReference.collection('wallpapers').where('status', '==', 'approved').orderBy('by_search_count', 'desc').limit(10).get();
+        const snapshot = await wallpaperReference.collection('wallpapers').where('status', '==', 'approved').orderBy('by_downloads_count', 'desc').limit(10).get();
         snapshot.forEach((doc: any) => {
             wallpapers.push(doc.data());
         });
@@ -243,19 +326,23 @@ export async function addNewWallpaper(wallpaper: Wallpaper) {
     let status = 'FAIL';
     try {
         const document = wallpaperReference.collection('wallpapers').doc();
+        const new_tags = [];
+        for (let item of wallpaper.tags) {
+            new_tags.push(item.toLowerCase().trim());
+        }
         await wallpaperReference.collection('wallpapers').doc(document.id).set({
             id: document.id,
             title: wallpaper.title.toLowerCase(),
             url_img: wallpaper.url_img,
             url_storage: wallpaper.url_storage,
-            tags: wallpaper.tags,
+            tags: new_tags,
             user: wallpaper.user,
             width: wallpaper.width,
             height: wallpaper.height,
             typeResolution: wallpaper.typeResolution,
             by_search_count: 0,
             by_downloads_count: 0,
-            status: 'approved'
+            status: 'pending'
         });
         status = 'OK';
     } catch (error) {
