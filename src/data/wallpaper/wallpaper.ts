@@ -191,6 +191,9 @@ export async function getUserAndSections(userId: String, tags: String[], isComin
                 "    url_storage\n" +
                 "    likes\n" +
                 "    dislikes\n" +
+                "    by_downloads_count\n" +
+                "    by_search_count\n" +
+                "    user\n" +
                 "    tags \n" +
                 "  }\n" +
                 "}";
@@ -206,6 +209,7 @@ export async function getUserAndSections(userId: String, tags: String[], isComin
                 "    }\n" +
                 "    title \n" +
                 "    wallpapers \n" +
+                "    wallpapers_count \n" +
                 "    tags \n" +
                 "    user \n" +
                 "  }\n" +

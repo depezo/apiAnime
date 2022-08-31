@@ -7,6 +7,8 @@ type Query {
     getTopReviews: [Review]
     getBestReviewWeek: [Review]
     getBanners: [Banner]
+    getReviewsByAnimeV2(id: Int, userId: String, filter: String): [Review]
+    getMoreReviewsByAnime(id: Int, filter: String, lastId: String): [Review]
 }
 
 type Mutation {
@@ -61,6 +63,8 @@ type Anime {
     day_broadcast_sub: String
     hour_broadcast_sub: String
     status_sub: String
+    pending_episode_sub: Int
+    pending_episode_dub: Int
 }
 
 type Aired {
