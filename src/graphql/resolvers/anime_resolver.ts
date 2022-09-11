@@ -1,4 +1,4 @@
-import { getAnimeData, getBanners, getBestReviewWeek, getComments, getMoreReviewsByAnime, getPictures, getReviewsByAnime, getReviewsByAnimeV2, getTopReviews, setComment, setLikeReview, setLikesOrDislikes, setReview } from "../../data/anime/anime_data";
+import { getAnimeData, getBanners, getComments, getPictures, setComment, setLikesOrDislikes } from "../../data/anime/anime_data";
 
 const animeResolver = {
     Query: {
@@ -11,24 +11,9 @@ const animeResolver = {
         getComments(root: void, args: any){
             return getComments(args.id);
         },
-        getReviewsByAnime(root: void, args: any){
-            return getReviewsByAnime(args.id);
-        },
-        getBestReviewWeek(root: void, args: any){
-            return getBestReviewWeek();
-        },
-        getTopReviews(root: void, args: any){
-            return getTopReviews();
-        },
         getBanners(root: void, args: void){
             return getBanners();
         },
-        getReviewsByAnimeV2(root: void, args: any){
-            return getReviewsByAnimeV2(args.id, args.userId, args.filter);
-        },
-        getMoreReviewsByAnime(root: void, args: any){
-            return getMoreReviewsByAnime(args.id, args.lastId,args.filter);
-        }
     },
     Mutation: {
         setComment(root:void, args:any){
@@ -36,12 +21,6 @@ const animeResolver = {
         },
         setLikesOrDislikes(root:void, args: any){
             return setLikesOrDislikes(args.idUser,args.type,args.idAnime,args.idComment);
-        },
-        setReview(root: void, args: any){
-            return setReview(args.id,args.title,args.description,args.anime);
-        },
-        setLikeReview(root: void, args: any){
-            return setLikeReview(args.idUser,args.type,args.idAnime,args.idReview);
         }
     }
 }

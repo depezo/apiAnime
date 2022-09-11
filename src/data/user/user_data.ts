@@ -1,5 +1,5 @@
 import { DocumentSnapshot } from "firebase-functions/v1/firestore";
-import { Anime, Review } from "../anime/anime_data";
+import { Anime } from "../anime/anime_data";
 
 const admin = require('firebase-admin');
 const firestore = admin.firestore();
@@ -73,27 +73,6 @@ export async function setFinishedAnime(id: String, idAnime: number) {
         console.log(error);
     }
     return status;
-}
-
-export async function getReviewsByUser(id: String) {
-    let reviews: Review[] = [];
-    try {
-        console.log("id user", id)
-        const snapshot = await firestore.collection('reviews').where('id_user', '==', id).get();
-        if (snapshot.empty) return reviews;
-        snapshot.forEach((doc: any) => {
-            const review: Review = doc.data();
-            review.id = doc.id;
-            review.datetime = doc.get("timestamp")._seconds.toString()
-            reviews.push(review);
-        });
-        await Promise.all(reviews.map(async (value: any, index: any) => {
-            reviews[index].user = await getUser(value.id_user);
-        }));
-    } catch (error) {
-        console.log(error);
-    }
-    return reviews;
 }
 
 export async function updateRol(id: String, rol: Rol) {

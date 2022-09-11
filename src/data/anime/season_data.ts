@@ -45,6 +45,7 @@ export async function getDataAnimeSeason(url: string) {
                 } else {
                     url_img = String($(value).find('.image > a > img').attr('src'));
                 }
+                url_img = String(url_img).replace('.jpg','l.jpg');
                 var idP = 0;
                 var descriptionP = "";
                 var source = "";

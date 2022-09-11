@@ -2,7 +2,6 @@ type Query {
     getEpisodesW(id: String, idAnime: Int): EpisodeW
     getAnimesFav(id: String): [Anime]
     getRoles: [Rol]
-    getReviewsByUser(id: String): [Review]
     getTypesImages: [TypeImage]
 }
 

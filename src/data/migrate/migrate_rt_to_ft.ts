@@ -1,6 +1,6 @@
 import { DataSnapshot } from "firebase-functions/v1/database";
 import { DocumentSnapshot } from "firebase-functions/v1/firestore";
-import { Anime, getAnimeData, Review } from "../anime/anime_data";
+import { Anime, getAnimeData } from "../anime/anime_data";
 
 const admin = require('firebase-admin');
 const serviceAccount = require('../../animeapp-a8b2c-firebase-adminsdk-qul5q-c256baff7f.json');

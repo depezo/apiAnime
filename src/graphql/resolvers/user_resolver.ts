@@ -1,4 +1,4 @@
-import { createUser, getAnimesFav, getEpisodesW, getReviewsByUser, getRoles, getTypeImages, setEpisodesW, setFinishedAnime, setLastViewed, updateAnimesFav, updateGif, updatePhoto, updateRol, updateUsername } from "../../data/user/user_data";
+import { createUser, getAnimesFav, getEpisodesW, getRoles, getTypeImages, setEpisodesW, setFinishedAnime, setLastViewed, updateAnimesFav, updateGif, updatePhoto, updateRol, updateUsername } from "../../data/user/user_data";
 
 const userResolver = {
     Query: {
@@ -10,9 +10,6 @@ const userResolver = {
         },
         getRoles(root:void, args: any){
             return getRoles();
-        },
-        getReviewsByUser(root:void, args: any){
-            return getReviewsByUser(args.id);
         },
         getTypesImages(root: void, args: any){
             return getTypeImages();
