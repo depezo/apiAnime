@@ -58,6 +58,7 @@ export async function getCollectionsByInput(input: String) {
 
 export async function getWallpapersOfCollection(wallpaperIds: String[]) {
     const wallpapers: Wallpaper[] = [];
+    console.log(wallpaperIds);
     try {
         for (let item of wallpaperIds) {
             const snapshot = await wallpaperReference.collection('wallpapers').doc(item).get();
@@ -66,7 +67,6 @@ export async function getWallpapersOfCollection(wallpaperIds: String[]) {
     } catch (error) {
         console.log(error);
     }
-    console.log(wallpaperIds)
     return wallpapers;
 }
 

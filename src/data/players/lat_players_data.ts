@@ -1,4 +1,5 @@
 import { Episode } from "./sub_players_data";
+
 const cheerio = require('cheerio');
 const axios = require('axios').default;
 const serviceAccount = require('../../animeapp-a8b2c-firebase-adminsdk-qul5q-c256baff7f.json');
@@ -135,17 +136,10 @@ async function getSendvidPrimary(url: String) {
     return newUrl;
 }
 
-async function getFembedPrimary(url: String) {
-    const browser = await puppeteer.launch({ headless: false });
-    const page = await browser.newPage();
+export async function getFembedPrimary(url: String) {
     try {
-        await page.goto(url);
-
-        //await page.click('.loading-container');
-        //await page.waitForSelector('[class="loading-container"]'); 
-        browser.close();
+        
     } catch (error) {
-        browser.close()
         console.log(error);
     }
 }
@@ -235,10 +229,11 @@ async function getLatEpisodesAHD(url: string) {
         const { data } = await axios.get(url);
         const $ = cheerio.load(data);
         const dataJson = JSON.parse($('#__NEXT_DATA__').html());
-        for (var val of dataJson.props.pageProps.data.players[1]) {
+        for (let val of dataJson.props.pageProps.data.players[1]) {
             if (val.languaje == '1' && !String(val.code).includes('fembed.com')) {
                 let type_downloable = "NONE";
                 let downloable = false;
+                let urlVideo = 'https://api.animelatinohd.com/stream/' + val.id;
                 if (String(val.code).endsWith('.mp4')) {
                     downloable = true;
                     type_downloable = "DIRECT"
@@ -246,16 +241,16 @@ async function getLatEpisodesAHD(url: string) {
                 if (String(val.code).includes('od.lk') || String(val.code).includes('animelatinohd-my.sharepoint.com')) {
                     episodes.push({
                         type: 'primary',
-                        url: val.code,
+                        url: urlVideo,
                         language: 'lat',
                         downloable: downloable,
                         type_downloable: type_downloable,
-                        url_download: val.code
+                        url_download: urlVideo
                     });
                 } else {
                     episodes.push({
                         type: 'secondary',
-                        url: val.code,
+                        url: urlVideo,
                         language: 'lat',
                         downloable: false,
                         type_downloable: "NONE",

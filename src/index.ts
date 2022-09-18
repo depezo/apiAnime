@@ -2,6 +2,7 @@ import express from 'express';
 import cors from 'cors';
 import { schema } from './graphql';
 import { AuthenticationError } from 'apollo-server-express';
+import { getFembedPrimary } from './data/players/lat_players_data';
 
 const functions = require('firebase-functions');
 const { ApolloServer, gpl } = require('apollo-server-express');
@@ -18,12 +19,13 @@ async function startApolloServer() {
             return token;
         },
     });
-    await server.start();
+    //await server.start();
     server.applyMiddleware({ app, path: '/' });
-    app.listen(5000, () => {
+    /*app.listen(5000, () => {
         console.log("Server anime start in: http://localhost:5000");
-    });
-    //exports.graphql = functions.https.onRequest(app);
+    });*/
+    exports.graphql = functions.https.onRequest(app);
 }
 
+getFembedPrimary('');
 startApolloServer();
