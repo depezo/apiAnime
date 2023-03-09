@@ -1,20 +1,4 @@
 {
-    "version": 1,
-    "build": [
-        {
-            "src": "dist/index.js",
-            "use": "@vercel/node",
-            "config": {
-                "includeFiles": [
-                    "dist/schemas/**/*.graphql"
-                ]
-            }
-        }
-    ],
-    "routes" : [
-        {
-            "src": "/(.*)",
-            "dest": "dist/index.js"
-        }
-    ]
+  "rewrites": [{ "source": "/(.*)", "destination": "dist/index.js" }]
 }
+
