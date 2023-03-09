@@ -3,7 +3,7 @@
     "module": "commonjs",
     "noImplicitReturns": false,
     "noUnusedLocals": false,
-    "outDir": "dist",
+    "outDir": "./public",
     "rootDir": "./src",
     "sourceMap": true,
     "removeComments": true,
